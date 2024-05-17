@@ -1,5 +1,6 @@
 package com.erayoezer.acmeshop.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class Topic {
     @Version
     private Long version;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Item> items = new ArrayList<>();
 
@@ -64,6 +66,22 @@ public class Topic {
     }
 
     public void setItems(List<Item> items) {
-        this.items = items;
+        this.items.clear();
+        if (items != null) {
+            for (Item item : items) {
+                item.setTopic(this);
+                this.addItem(item);
+            }
+        }
+    }
+
+    public void addItem(Item item) {
+        items.add(item);
+        item.setTopic(this);
+    }
+
+    public void removeItem(Item item) {
+        items.remove(item);
+        item.setTopic(null);
     }
 }

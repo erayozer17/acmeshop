@@ -1,5 +1,6 @@
 package com.erayoezer.acmeshop.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.util.Objects;
@@ -14,6 +15,7 @@ public class Item {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "topic_id")
+    @JsonBackReference
     private Topic topic;
 
     @Version
@@ -41,14 +43,6 @@ public class Item {
 
     public void setTopic(Topic topic) {
         this.topic = topic;
-    }
-
-    public Long getVersion() {
-        return version;
-    }
-
-    public void setVersion(Long version) {
-        this.version = version;
     }
 
     @Override
