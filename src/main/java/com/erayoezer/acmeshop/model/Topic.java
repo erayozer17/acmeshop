@@ -2,17 +2,25 @@ package com.erayoezer.acmeshop.model;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
-public class List {
+public class Topic {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     private String name;
+
     private String description;
+
     @Version
     private Long version;
+
+    @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Item> items = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -42,12 +50,20 @@ public class List {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        List list = (List) o;
-        return Objects.equals(id, list.id) && Objects.equals(name, list.name) && Objects.equals(description, list.description);
+        Topic topic = (Topic) o;
+        return Objects.equals(id, topic.id) && Objects.equals(name, topic.name) && Objects.equals(description, topic.description);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, name, description);
+    }
+
+    public List<Item> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
     }
 }
