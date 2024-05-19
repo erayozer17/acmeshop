@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @RequestMapping("/auth")
 @RestController
 public class AuthenticationController {
@@ -33,9 +35,13 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
-        User authenticatedUser = authenticationService.authenticate(loginUserDto);
+        Optional<User> authenticatedUser = authenticationService.authenticate(loginUserDto);
 
-        String jwtToken = jwtService.generateToken(authenticatedUser);
+        if (authenticatedUser.isEmpty()) {
+            return ResponseEntity.status(403).build();
+        }
+
+        String jwtToken = jwtService.generateToken(authenticatedUser.get());
 
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setToken(jwtToken);
