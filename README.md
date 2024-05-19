@@ -1,0 +1,1 @@
+[![Java CI](https://github.com/erayozer17/acmeshop/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/erayozer17/acmeshop/actions/workflows/ci.yml)
