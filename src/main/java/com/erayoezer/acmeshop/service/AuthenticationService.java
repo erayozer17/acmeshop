@@ -18,11 +18,9 @@ import java.util.Optional;
 @Service
 public class AuthenticationService {
 
-    private static Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationService(
