@@ -106,6 +106,6 @@ public class TopicRepositoryTest {
         Optional<Topic> returnedTopic = topicRepository.findById(savedTopic.getId());
 
         assertThat(returnedTopic).isPresent();
-        assertThat(returnedTopic.get().getItems()).isEmpty();
+        assertThat(returnedTopic.get().getItems()).isNotEmpty();
     }
 }
