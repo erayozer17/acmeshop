@@ -3,6 +3,8 @@ package com.erayoezer.acmeshop.model;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -13,7 +15,12 @@ public class Topic {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @NotEmpty(message = "Name cannot be empty")
+    @Size(max = 100, message = "Name should not be greater than 100 characters")
     private String name;
+
+    @NotEmpty(message = "Description cannot be empty")
+    @Size(max = 500, message = "Description should not be greater than 500 characters")
 
     private String description;
 
