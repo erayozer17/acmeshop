@@ -54,7 +54,7 @@ jobs:
           done
 
       - name: Build with Gradle
-        run: ./gradlew build --no-daemon -Pprofile=test -Dspring.profiles.active=test
+        run: ./gradlew build -x test --no-daemon -Pprofile=test -Dspring.profiles.active=test
 
       - name: Run tests
         run: ./gradlew test --no-daemon -Pprofile=test -Dspring.profiles.active=test
