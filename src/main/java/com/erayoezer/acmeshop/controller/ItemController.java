@@ -28,8 +28,10 @@ public class ItemController {
     }
 
     @PostMapping
-    public Item createItem(@RequestBody Item item) {
-        return itemService.save(item);
+    public ResponseEntity<Item> createItem(@RequestBody Item item) {
+        Item retItem = itemService.save(item);
+        Optional<Item> optItem = itemService.findById(retItem.getId());
+        return optItem.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
