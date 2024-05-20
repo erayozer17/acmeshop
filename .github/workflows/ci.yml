@@ -16,7 +16,6 @@ jobs:
           MYSQL_ROOT_PASSWORD: example
           MYSQL_DATABASE: acmeshop
           MYSQL_USER: root
-          MYSQL_PASSWORD: example
 
     steps:
       - uses: actions/checkout@v2
