@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Transactional
-@ActiveProfiles("test")
 public class TopicRepositoryTest {
 
     @Autowired

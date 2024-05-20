@@ -6,6 +6,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      mariadb:
+        image: mariadb:latest
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_password
+
     steps:
       - uses: actions/checkout@v2
 
@@ -34,8 +50,15 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Wait for MariaDB to be ready
+        run: |
+          until mysqladmin ping -h"127.0.0.1" --silent; do
+            echo 'waiting for mariadb to be ready...'
+            sleep 3
+          done
+
       - name: Build with Gradle
-        run: ./gradlew build --no-daemon -Pprofile=test
+        run: ./gradlew build --no-daemon -Pprofile=test -Dspring.profiles.active=test
 
       - name: Run tests
-        run: ./gradlew test --no-daemon -Pprofile=test
+        run: ./gradlew test --no-daemon -Pprofile=test -Dspring.profiles.active=test

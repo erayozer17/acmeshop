@@ -26,7 +26,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 
-@ActiveProfiles("test")
 public class AuthenticationServiceTest {
 
     @Mock
