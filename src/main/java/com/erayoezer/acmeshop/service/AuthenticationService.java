@@ -1,7 +1,7 @@
 package com.erayoezer.acmeshop.service;
 
-import com.erayoezer.acmeshop.dto.LoginUserDto;
-import com.erayoezer.acmeshop.dto.RegisterUserDto;
+import com.erayoezer.acmeshop.model.dto.LoginUserDto;
+import com.erayoezer.acmeshop.model.dto.RegisterUserDto;
 import com.erayoezer.acmeshop.model.User;
 import com.erayoezer.acmeshop.repository.UserRepository;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ public class AuthenticationService {
 
     public User signup(RegisterUserDto input) {
         User user = new User();
-        user.setFullName(input.getFullName());
+        user.setFullName(input.getUserName());
         user.setEmail(input.getEmail());
         user.setPassword(passwordEncoder.encode(input.getPassword()));
 

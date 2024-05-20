@@ -6,8 +6,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
-import com.erayoezer.acmeshop.dto.LoginUserDto;
-import com.erayoezer.acmeshop.dto.RegisterUserDto;
+import com.erayoezer.acmeshop.model.dto.LoginUserDto;
+import com.erayoezer.acmeshop.model.dto.RegisterUserDto;
 import com.erayoezer.acmeshop.model.User;
 import com.erayoezer.acmeshop.repository.UserRepository;
 import com.erayoezer.acmeshop.service.AuthenticationService;
@@ -23,7 +23,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 
 
 public class AuthenticationServiceTest {
@@ -49,12 +48,12 @@ public class AuthenticationServiceTest {
     @Test
     public void testSignup() {
         RegisterUserDto input = new RegisterUserDto();
-        input.setFullName("John Doe");
+        input.setUserName("John Doe");
         input.setEmail("john.doe@example.com");
         input.setPassword("password");
 
         User user = new User();
-        user.setFullName(input.getFullName());
+        user.setFullName(input.getUserName());
         user.setEmail(input.getEmail());
         user.setPassword(passwordEncoder.encode(input.getPassword()));
 
@@ -63,7 +62,7 @@ public class AuthenticationServiceTest {
         User savedUser = authenticationService.signup(input);
 
         assertNotNull(savedUser);
-        assertEquals(input.getFullName(), savedUser.getFullName());
+        assertEquals(input.getUserName(), savedUser.getFullName());
         assertEquals(input.getEmail(), savedUser.getEmail());
         assertTrue(passwordEncoder.matches(input.getPassword(), savedUser.getPassword()));
     }
