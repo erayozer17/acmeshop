@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 @Component
 public class TopicScheduler {
 
@@ -15,10 +18,24 @@ public class TopicScheduler {
     @Autowired
     private TopicService topicService;
 
+    private final Lock itemCreationLock = new ReentrantLock();
+
     @Scheduled(fixedRate = 60000) // Run every 60 seconds (1 minute)
     public void scheduleItemCreation() {
         logger.info("Item creation scheduler is running...");
         topicService.createItemsForTopic();
         logger.info("Item creation scheduler is completed.");
+
+        if (itemCreationLock.tryLock()) {
+            try {
+                logger.info("Item creation scheduler is running...");
+                topicService.createItemsForTopic();
+            } finally {
+                logger.info("Item creation scheduler is completed.");
+                itemCreationLock.unlock();
+            }
+        } else {
+            logger.warn("Previous batch is still running. Skipping this execution.");
+        }
     }
 }

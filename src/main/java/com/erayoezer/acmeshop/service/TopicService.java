@@ -4,8 +4,9 @@ import com.erayoezer.acmeshop.model.Item;
 import com.erayoezer.acmeshop.model.Topic;
 import com.erayoezer.acmeshop.repository.ItemRepository;
 import com.erayoezer.acmeshop.repository.TopicRepository;
-import com.sun.jna.platform.unix.solaris.LibKstat;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,7 +68,9 @@ public class TopicService {
 
     @Transactional
     public void createItemsForTopic() {
-        List<Topic> topicsToBeGenerated = topicRepository.findByGenerated(false);
+        int returnedTopicsSize = 10;
+        Pageable pageable = PageRequest.of(0, returnedTopicsSize);
+        List<Topic> topicsToBeGenerated = topicRepository.findByGenerated(false, pageable);
         for (Topic topic : topicsToBeGenerated) {
             String description = topic.getDescription();
             String prompt = String.format("list me all topics comprehensively related to %s. " +
