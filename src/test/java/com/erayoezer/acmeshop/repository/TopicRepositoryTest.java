@@ -2,6 +2,7 @@ package com.erayoezer.acmeshop.repository;
 
 import com.erayoezer.acmeshop.model.Item;
 import com.erayoezer.acmeshop.model.Topic;
+import com.erayoezer.acmeshop.model.User;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -30,13 +31,23 @@ public class TopicRepositoryTest {
     @Autowired
     private ItemRepository itemRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private Long topicId;
 
     @BeforeAll
     public void setUp() {
+        User user = new User();
+        user.setEmail("asd3@asd.com");
+        user.setFullName("asd asd");
+        user.setPassword("asd");
+        User retUser = userRepository.save(user);
+
         Topic topic = new Topic();
         topic.setName("Test Topic");
         topic.setDescription("Test Description");
+        topic.setUser(retUser);
 
         Topic savedTopic = topicRepository.save(topic);
         topicId = savedTopic.getId();

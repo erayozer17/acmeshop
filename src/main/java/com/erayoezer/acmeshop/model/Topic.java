@@ -1,9 +1,13 @@
 package com.erayoezer.acmeshop.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +25,10 @@ public class Topic {
 
     @NotEmpty(message = "Description cannot be empty")
     @Size(max = 500, message = "Description should not be greater than 500 characters")
-
     private String description;
+
+    @NotNull
+    private Boolean generated = false;
 
     @Version
     private Long version;
@@ -31,12 +37,26 @@ public class Topic {
     @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Item> items = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonBackReference
+    private User user;
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getName() {
@@ -80,6 +100,14 @@ public class Topic {
                 this.addItem(item);
             }
         }
+    }
+
+    public @NotNull Boolean getGenerated() {
+        return generated;
+    }
+
+    public void setGenerated(@NotNull Boolean generated) {
+        this.generated = generated;
     }
 
     public void addItem(Item item) {
