@@ -10,6 +10,7 @@ import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -20,14 +21,19 @@ import java.io.IOException;
 public class OpenAIService {
 
     private final RestTemplate restTemplate;
+    private final CloseableHttpClient httpClient;
     private final String apiKey;
     private final String apiUrl;
     private final String defaultModel;
 
+    @Autowired
     public OpenAIService(@Value("${openai.api.key}") String apiKey,
                          @Value("${openai.api.url}") String apiUrl,
-                         @Value("${openai.api.defaultModel}") String defaultModel) {
-        this.restTemplate = new RestTemplate();
+                         @Value("${openai.api.defaultModel}") String defaultModel,
+                         RestTemplate restTemplate,
+                         CloseableHttpClient httpClient) {
+        this.restTemplate = restTemplate;
+        this.httpClient = httpClient;
         this.apiKey = apiKey;
         this.apiUrl = apiUrl;
         this.defaultModel = defaultModel;
@@ -35,7 +41,7 @@ public class OpenAIService {
 
     public String sendRequest(String prompt) {
         String responseBody = "";
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+        try {
             HttpPost request = new HttpPost(apiUrl);
             request.setHeader("Content-Type", "application/json");
             request.setHeader("Authorization", "Bearer " + apiKey);
@@ -55,18 +61,18 @@ public class OpenAIService {
 
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 responseBody = EntityUtils.toString(response.getEntity());
-                System.out.println(responseBody);
+                System.out.println(responseBody); // TODO: use logs
             } catch (ParseException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException(e); // TODO: use logs
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // TODO: use logs
         }
         return getContent(responseBody);
     }
 
-    private String getContent(String responseBody) {
+    protected String getContent(String responseBody) {
         JSONObject jsonResponse = new JSONObject(responseBody);
         String content = "";
         JSONArray choices = jsonResponse.getJSONArray("choices");
@@ -74,9 +80,9 @@ public class OpenAIService {
             JSONObject firstChoice = choices.getJSONObject(0);
             JSONObject messageObject = firstChoice.getJSONObject("message");
             content = messageObject.getString("content");
-            System.out.println(content);
+            System.out.println(content); // TODO: use logs
         } else {
-            System.out.println("No choices available in the response.");
+            System.out.println("No choices available in the response."); // TODO: use logs
         }
         return content;
     }
