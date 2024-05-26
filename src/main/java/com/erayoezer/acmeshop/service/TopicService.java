@@ -4,6 +4,8 @@ import com.erayoezer.acmeshop.model.Item;
 import com.erayoezer.acmeshop.model.Topic;
 import com.erayoezer.acmeshop.repository.ItemRepository;
 import com.erayoezer.acmeshop.repository.TopicRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +19,8 @@ import java.util.stream.Stream;
 
 @Service
 public class TopicService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TopicService.class);
 
     @Autowired
     private TopicRepository topicRepository;
@@ -71,15 +75,20 @@ public class TopicService {
         int returnedTopicsSize = 10;
         Pageable pageable = PageRequest.of(0, returnedTopicsSize);
         List<Topic> topicsToBeGenerated = topicRepository.findByGenerated(false, pageable);
+        logger.info(String.format("%d topics are retrieved to be processed.", topicsToBeGenerated.size()));
         for (Topic topic : topicsToBeGenerated) {
             String description = topic.getDescription();
             String prompt = String.format("list me all topics comprehensively related to %s. " +
-                    "return only the items, each starting nothing but with a new line", description); // TODO: validate the new line format
+                    "return only the items, each starting nothing but with a new line", description);
+            logger.info(String.format("Prompt is sent: %s", prompt));
             String response = openAIService.sendRequest(prompt);
+            logger.info(String.format("Response is received: %s", response));
             List<Item> items = splitStringIntoItems(response, topic);
             itemRepository.saveAll(items);
+            logger.info(String.format("%d items are saved for topicId: %d", items.size(), topic.getId()));
             topic.setGenerated(true);
             topicRepository.save(topic);
+            logger.info(String.format("topicId: %d set to generated", topic.getId()));
         }
     }
 
