@@ -49,6 +49,7 @@ public class TopicController {
             User currentUser = (User) authentication.getPrincipal();
             topic.setUser(currentUser);
             Topic savedTopic = topicService.save(topic);
+            topicService.createItemsForTopic();
             logger.info("Topic created with id: {}", savedTopic.getId());
             return ResponseEntity.ok(savedTopic);
         } catch (Exception e) {
