@@ -66,6 +66,7 @@ jobs:
         run: ./gradlew test --no-daemon -Pprofile=test -Dspring.profiles.active=test
 
       - name: Upload test reports
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: test-reports
