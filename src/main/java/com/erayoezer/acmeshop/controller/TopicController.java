@@ -46,7 +46,13 @@ public class TopicController {
     public ResponseEntity<Topic> createTopic(@RequestBody @Validated Topic topic) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null) {
+                return ResponseEntity.status(401).build();
+            }
             User currentUser = (User) authentication.getPrincipal();
+            if (currentUser == null) {
+                return ResponseEntity.status(500).build(); // TODO: rethink about the status codes
+            }
             topic.setUser(currentUser);
             Topic savedTopic = topicService.save(topic);
             logger.info("Topic created with id: {}", savedTopic.getId());
