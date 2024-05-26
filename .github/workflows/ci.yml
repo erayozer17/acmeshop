@@ -64,3 +64,9 @@ jobs:
 
       - name: Run tests
         run: ./gradlew test --no-daemon -Pprofile=test -Dspring.profiles.active=test
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: build/reports/tests/test

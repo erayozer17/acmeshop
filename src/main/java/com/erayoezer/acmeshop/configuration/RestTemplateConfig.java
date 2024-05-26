@@ -18,5 +18,4 @@ public class RestTemplateConfig {
     public CloseableHttpClient closeableHttpClient() {
         return HttpClients.createDefault();
     }
-
 }
