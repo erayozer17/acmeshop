@@ -6,6 +6,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
     services:
       mariadb:
         image: mariadb:latest
@@ -45,9 +49,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-#      - name: Copy initialization script
-#        run: |
-#          docker cp init.sql $(docker ps -q --filter "ancestor=mariadb:latest"):/docker-entrypoint-initdb.d/
+      #      - name: Copy initialization script
+      #        run: |
+      #          docker cp init.sql $(docker ps -q --filter "ancestor=mariadb:latest"):/docker-entrypoint-initdb.d/
 
       - name: Wait for MariaDB to be ready
         run: |
@@ -56,11 +60,18 @@ jobs:
             sleep 3
           done
 
-#      - name: Print MariaDB logs
-#        run: docker logs $(docker ps -q --filter "ancestor=mariadb:latest")
+      #      - name: Print MariaDB logs
+      #        run: docker logs $(docker ps -q --filter "ancestor=mariadb:latest")
 
       - name: Build with Gradle
         run: ./gradlew build -x test --no-daemon -Pprofile=test -Dspring.profiles.active=test
 
       - name: Run tests
         run: ./gradlew test --no-daemon -Pprofile=test -Dspring.profiles.active=test
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: build/reports/tests/test
