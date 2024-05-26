@@ -15,6 +15,9 @@ public class TopicService {
     @Autowired
     private TopicRepository topicRepository;
 
+    @Autowired
+    private OpenAIService openAIService;
+
     public List<Topic> findAll() {
         return topicRepository.findAll();
     }
@@ -52,5 +55,9 @@ public class TopicService {
         } else {
             return Optional.empty();
         }
+    }
+
+    public void createItemsForTopic(Topic topic) {
+
     }
 }

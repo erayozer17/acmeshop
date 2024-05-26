@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +22,10 @@ public class Topic {
 
     @NotEmpty(message = "Description cannot be empty")
     @Size(max = 500, message = "Description should not be greater than 500 characters")
-
     private String description;
+
+    @NotNull
+    private Boolean generated = false;
 
     @Version
     private Long version;
@@ -80,6 +83,14 @@ public class Topic {
                 this.addItem(item);
             }
         }
+    }
+
+    public @NotNull Boolean getGenerated() {
+        return generated;
+    }
+
+    public void setGenerated(@NotNull Boolean generated) {
+        this.generated = generated;
     }
 
     public void addItem(Item item) {
