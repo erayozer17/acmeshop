@@ -27,11 +27,9 @@ jobs:
           distribution: 'temurin'
 
       - name: Load .env file
-        run: |
-          if [ -f .env ]; then
-            export $(cat .env | sed 's/#.*//g' | xargs)
-          fi
-        shell: bash
+        uses: direnv/direnv-action@v1
+        with:
+          env_file: .env
 
       - name: Cache Gradle packages
         uses: actions/cache@v2
