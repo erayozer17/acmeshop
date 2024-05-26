@@ -19,7 +19,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           # Optional
           LANGUAGE: English
-          OPENAI_API_ENDPOINT: https://api.openai.com/v1
+          OPENAI_API_ENDPOINT: https://api.openai.com/v1/chat/completions
           MODEL: gpt-3.5-turbo # https://platform.openai.com/docs/models
           PROMPT: Make a short code review in the following code difference and only point the possible mistakes or the parts against industry standards. # example: Please check if there are any confusions or irregularities in the following code diff:
           top_p: 1 # https://platform.openai.com/docs/api-reference/chat/create#chat/create-top_p
