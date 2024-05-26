@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface TopicRepository extends JpaRepository<Topic, Long> {
-    List<Topic> findByGenerated(String generated);
+    List<Topic> findByGenerated(Boolean generated);
 }

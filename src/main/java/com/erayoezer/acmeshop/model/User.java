@@ -1,11 +1,13 @@
 package com.erayoezer.acmeshop.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +36,10 @@ public class User implements UserDetails {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Topic> topics = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -71,6 +77,30 @@ public class User implements UserDetails {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public List<Topic> getTopics() {
+        return topics;
+    }
+
+    public void setTopics(List<Topic> topics) {
+        this.topics.clear();
+        if (topics != null) {
+            for (Topic topic : topics) {
+                topic.setUser(this);
+                this.addTopic(topic);
+            }
+        }
+    }
+
+    public void addTopic(Topic topic) {
+        topics.add(topic);
+        topic.setUser(this);
+    }
+
+    public void removeTopic(Topic topic) {
+        topics.remove(topic);
+        topic.setUser(this);
     }
 
     public String getFullName() {
