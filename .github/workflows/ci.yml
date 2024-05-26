@@ -26,15 +26,6 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Load .env file
-        run: |
-          if [ -f .env ]; then
-            set -o allexport
-            source .env
-            set -o allexport -
-          fi
-        shell: bash
-
       - name: Cache Gradle packages
         uses: actions/cache@v2
         with:
