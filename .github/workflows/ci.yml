@@ -26,6 +26,13 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Load .env file
+        run: |
+          if [ -f .env ]; then
+            export $(cat .env | sed 's/#.*//g' | xargs)
+          fi
+        shell: bash
+
       - name: Cache Gradle packages
         uses: actions/cache@v2
         with:
