@@ -29,6 +29,8 @@ public class Item {
     @Column(updatable = false, name = "next_at")
     private Date nextAt;
 
+    @Lob // This annotation indicates that the content should be stored as a large object
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @Version
