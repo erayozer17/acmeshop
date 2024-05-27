@@ -1,5 +1,6 @@
 package com.erayoezer.acmeshop.service;
 
+import org.apache.commons.validator.routines.EmailValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,14 @@ public class MailService {
     }
 
     public void sendEmail(String toEmail, String subject, String content) {
+        if (!isValidEmail(toEmail)) {
+            logger.error("Invalid email address: {}", toEmail);
+            return;
+        }
+
+        subject = sanitizeInput(subject);
+        content = sanitizeInput(content);
+
         Properties prop = new Properties();
         prop.put("mail.smtp.host", "smtp.gmail.com");
         prop.put("mail.smtp.port", "465");
@@ -42,7 +51,6 @@ public class MailService {
                 });
 
         try {
-
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(fromEmail));
             message.setRecipients(
@@ -58,6 +66,15 @@ public class MailService {
         } catch (MessagingException e) {
             logger.error("Email could not be sent. Error: {}", e.getMessage());
         }
+    }
+
+    private boolean isValidEmail(String email) {
+        EmailValidator validator = EmailValidator.getInstance();
+        return validator.isValid(email);
+    }
+
+    private String sanitizeInput(String input) {
+        return input.replaceAll("[\r\n]", "");
     }
 
     private static String stripQuotes(String input) {
