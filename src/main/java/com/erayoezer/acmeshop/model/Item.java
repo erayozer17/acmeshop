@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import javax.validation.constraints.NotNull;
+import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -20,6 +22,14 @@ public class Item {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonBackReference
     private Topic topic;
+
+    @NotNull
+    private Boolean sent = false;
+
+    @Column(updatable = false, name = "next_at")
+    private Date nextAt;
+
+    private String content;
 
     @Version
     private Long version;
@@ -46,6 +56,30 @@ public class Item {
 
     public void setTopic(Topic topic) {
         this.topic = topic;
+    }
+
+    public @NotNull Boolean getSent() {
+        return sent;
+    }
+
+    public void setSent(@NotNull Boolean sent) {
+        this.sent = sent;
+    }
+
+    public Date getNextAt() {
+        return nextAt;
+    }
+
+    public void setNextAt(Date nextAt) {
+        this.nextAt = nextAt;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     @Override

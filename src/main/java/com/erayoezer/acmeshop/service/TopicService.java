@@ -12,6 +12,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -84,8 +88,9 @@ public class TopicService {
             String response = openAIService.sendRequest(prompt);
             logger.info(String.format("Response is received: %s", response));
             List<Item> items = splitStringIntoItems(response, topic);
-            itemRepository.saveAll(items);
-            logger.info(String.format("%d items are saved for topicId: %d", items.size(), topic.getId()));
+            List<Item> itemsWithDates = setDatesToItems(items);
+            itemRepository.saveAll(itemsWithDates);
+            logger.info(String.format("%d items are saved for topicId: %d", itemsWithDates.size(), topic.getId()));
             topic.setGenerated(true);
             topicRepository.save(topic);
             logger.info(String.format("topicId: %d set to generated", topic.getId()));
@@ -100,8 +105,23 @@ public class TopicService {
                     Item item = new Item();
                     item.setText(line);
                     item.setTopic(topic);
+                    item.setSent(false);
                     return item;
                 })
                 .collect(Collectors.toList());
+    }
+
+    private List<Item> setDatesToItems(List<Item> items) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nextDayAt8AM = now.plusDays(1).with(LocalTime.of(8, 0));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        for (int i = 0; i < items.size(); i++) {
+            Item item = items.get(i);
+            LocalDateTime dateForItem = nextDayAt8AM.plusDays(i);
+            String formattedDate = dateForItem.format(formatter);
+            item.setNextAt(Timestamp.valueOf(formattedDate));
+            logger.info("Date for {}: {}", item.getId(), formattedDate);
+        }
+        return items;
     }
 }
