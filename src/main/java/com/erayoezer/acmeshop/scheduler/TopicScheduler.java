@@ -22,10 +22,6 @@ public class TopicScheduler {
 
     @Scheduled(fixedRate = 60000) // Run every 60 seconds (1 minute)
     public void scheduleItemCreation() {
-        logger.info("Item creation scheduler is running...");
-        topicService.createItemsForTopic();
-        logger.info("Item creation scheduler is completed.");
-
         if (itemCreationLock.tryLock()) {
             try {
                 logger.info("Item creation scheduler is running...");
