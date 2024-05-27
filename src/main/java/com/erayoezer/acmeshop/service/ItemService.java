@@ -79,6 +79,7 @@ public class ItemService {
             String response = openAIService.sendRequest(prompt);
             item.setContent(response);
             mailService.sendEmail(item.getTopic().getUser().getEmail(), itemText, response);
+            item.setSent(true);
             itemRepository.save(item);
         }
     }
