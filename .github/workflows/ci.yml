@@ -9,8 +9,8 @@ jobs:
     env:
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
-      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      EMAIL_FROM_USER: ${{ secrets.EMAIL_USERNAME }}
+      EMAIL_TOKEN: ${{ secrets.EMAIL_PASSWORD }}
       MYSQL_USER: root
       MYSQL_PASSWORD: example
 
