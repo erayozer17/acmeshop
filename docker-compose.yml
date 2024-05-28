@@ -20,6 +20,8 @@ services:
       LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
       SERVER_PORT: ${SERVER_PORT}
+    networks:
+      - nginx-proxy
     depends_on:
       - mariadb_acme
     entrypoint: ["./wait-for-it.sh", "mariadb_acme:3306", "--", "java", "-jar", "app.jar"]
@@ -39,6 +41,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - nginx-proxy
     volumes:
       - mariadb_data:/var/lib/mysql
 
