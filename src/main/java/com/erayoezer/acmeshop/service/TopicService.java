@@ -113,11 +113,11 @@ public class TopicService {
 
     private List<Item> setDatesToItems(List<Item> items) {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime nextDayAt8AM = now.plusDays(1).with(LocalTime.of(8, 0));
+        LocalDateTime nextDayAt8AM = now.plusDays(1).with(LocalTime.of(8, 0)); //TODO: make time configurable
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         for (int i = 0; i < items.size(); i++) {
             Item item = items.get(i);
-            LocalDateTime dateForItem = nextDayAt8AM.plusDays(i);
+            LocalDateTime dateForItem = nextDayAt8AM.plusDays(i); //TODO: make every x days configurable
             String formattedDate = dateForItem.format(formatter);
             item.setNextAt(Timestamp.valueOf(formattedDate));
             logger.info("Date for {}: {}", item.getId(), formattedDate);
