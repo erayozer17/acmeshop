@@ -6,8 +6,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
+    expose:
+      - 80
     environment:
       SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb_acme:3306/acmeshop
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
@@ -16,6 +16,10 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       EMAIL_USERNAME: ${EMAIL_USERNAME}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+      SERVER_PORT: ${SERVER_PORT}
     depends_on:
       - mariadb_acme
     entrypoint: ["./wait-for-it.sh", "mariadb_acme:3306", "--", "java", "-jar", "app.jar"]
@@ -40,3 +44,7 @@ services:
 
 volumes:
   mariadb_data:
+
+networks:
+  nginx-proxy:
+    external: true

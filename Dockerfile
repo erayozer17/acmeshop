@@ -8,5 +8,5 @@ WORKDIR /app
 COPY --from=build /home/gradle/project/build/libs/acmeshop-0.0.1-SNAPSHOT.jar app.jar
 COPY wait-for-it.sh /app/wait-for-it.sh
 RUN chmod +x /app/wait-for-it.sh
-EXPOSE 8080
+EXPOSE 80
 ENTRYPOINT ["./wait-for-it.sh", "db:3306", "--", "java", "-jar", "app.jar"]
