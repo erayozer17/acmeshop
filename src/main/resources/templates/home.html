@@ -11,6 +11,7 @@
             <th>Name</th>
             <th>Description</th>
             <th>Items</th>
+            <th>Delete</th>
         </tr>
         </thead>
         <tbody>
@@ -20,6 +21,11 @@
             <td>
                 <a th:href="@{/items/{id}(id=${topic.id})}" class="btn btn-primary">
                     <i class="fas fa-list"></i>
+                </a>
+            </td>
+            <td>
+                <a th:href="@{/topic/delete/{id}(id=${topic.id})}" class="btn btn-primary">
+                    <i class="fas fa-trash"></i>
                 </a>
             </td>
         </tr>

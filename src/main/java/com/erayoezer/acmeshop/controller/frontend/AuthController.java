@@ -184,4 +184,16 @@ public class AuthController {
         Long topicId = item.get().getTopic().getId();
         return "redirect:/items/" + topicId;
     }
+
+    @GetMapping("/topic/delete/{id}") // TODO: make it delete
+    public String deleteTopic(@PathVariable Long id, Model model) {
+        Optional<Topic> topic = topicService.findById(id);
+        if (topic.isEmpty()) {
+            logger.error("Topic could not be found to delete. Id: {}", id);
+            return "redirect:/home";
+        }
+        topicService.deleteById(id);
+        model.addAttribute("isAuthenticated", true);
+        return "redirect:/home";
+    }
 }
