@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Sign Up</title>
-    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
-</head>
+<head th:replace="fragments/header :: head(title='Home')"></head>
 <body>
+<div th:replace="fragments/navbar :: navbar"></div>
 <div class="container">
     <h2>Sign Up</h2>
     <form th:action="@{/signup}" method="post">

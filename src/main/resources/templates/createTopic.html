@@ -9,16 +9,16 @@
         <button type="submit" class="btn btn-primary">Logout</button>
     </form>
 
-    <form th:action="@{/item/edit/{id}(id=${item.id})}" th:object="${item}" method="post" class="mt-3">
+    <form th:action="@{/topic/create}" method="post" class="mt-3">
         <div class="form-group">
-            <label for="text">Text</label>
-            <input type="text" id="text" th:field="*{text}" class="form-control" required />
+            <label for="name">Text:</label>
+            <input type="text" id="name" name="name" class="form-control" required>
         </div>
         <div class="form-group">
-            <label for="nextAt">Next At</label>
-            <input type="text" id="nextAt" th:field="*{nextAt}" class="form-control" required />
+            <label for="description">Description:</label>
+            <input type="text" id="description" name="description" class="form-control" required>
         </div>
-        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="submit" class="btn btn-primary">Create</button>
     </form>
 </div>
 </body>

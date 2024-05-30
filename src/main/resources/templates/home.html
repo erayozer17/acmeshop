@@ -1,18 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
-<head>
-    <title>Home</title>
-    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
-    <!-- Font Awesome CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-</head>
+<head th:replace="fragments/header :: head(title='Home')"></head>
 <body>
+<div th:replace="fragments/navbar :: navbar"></div>
 <div class="container">
-    <h2>Welcome, <span th:text="${email}"></span>!</h2>
-    <form th:action="@{/logout}" method="post">
-        <button type="submit" class="btn btn-primary">Logout</button>
-    </form>
-
     <h1>Topics</h1>
     <table class="table table-striped mt-3">
         <thead class="thead-dark">

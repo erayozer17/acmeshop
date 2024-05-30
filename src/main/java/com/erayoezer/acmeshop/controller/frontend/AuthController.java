@@ -2,6 +2,7 @@ package com.erayoezer.acmeshop.controller.frontend;
 
 import com.erayoezer.acmeshop.model.Item;
 import com.erayoezer.acmeshop.model.Topic;
+import com.erayoezer.acmeshop.model.User;
 import com.erayoezer.acmeshop.service.ItemService;
 import com.erayoezer.acmeshop.service.TopicService;
 import com.erayoezer.acmeshop.service.UserService;
@@ -43,12 +44,14 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String showLoginForm() {
+    public String showLoginForm(Model model) {
+        model.addAttribute("isAuthenticated", false);
         return "login";
     }
 
     @GetMapping("/signup")
-    public String showSignupForm() {
+    public String showSignupForm(Model model) {
+        model.addAttribute("isAuthenticated", false);
         return "signup";
     }
 
@@ -62,6 +65,7 @@ public class AuthController {
     public String showHomePage(Model model) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         model.addAttribute("email", email);
+        model.addAttribute("isAuthenticated", true);
         List<Topic> topicsByEmail = topicService.findAllByEmail(email);
         model.addAttribute("topics", topicsByEmail);
         return "home";
@@ -75,6 +79,7 @@ public class AuthController {
             model.addAttribute("topic", retTopic);
             List<Item> itemsByTopic = itemService.findByTopic(retTopic);
             model.addAttribute("items", itemsByTopic);
+            model.addAttribute("isAuthenticated", true);
             return "items";
         } else {
             logger.error("Topic was returned but couldn't be found now. This should NOT happen.");
@@ -88,6 +93,7 @@ public class AuthController {
         if (item.isPresent()) {
             Item retItem = item.get();
             model.addAttribute("item", retItem);
+            model.addAttribute("isAuthenticated", true);
             return "itemEdit";
         } else {
             logger.error("Item was returned but couldn't be found now. This should NOT happen.");
@@ -100,6 +106,7 @@ public class AuthController {
         Optional<Item> returned = itemService.findById(id);
         if (returned.isEmpty()) {
             logger.error("Item could not be found for item editing. This should NOT happen.");
+            return "redirect:/home";
         }
         Item item = returned.get();
         item.setText(text);
@@ -136,5 +143,32 @@ public class AuthController {
             model.addAttribute("error", "Invalid username or password");
             return "login";
         }
+    }
+
+    @GetMapping("/createTopic")
+    public String createTopicGet(Model model) {
+        model.addAttribute("isAuthenticated", true);
+        return "createTopic";
+    }
+
+    @PostMapping("/topic/create")
+    public String createTopicPost(Model model,  @RequestParam String name, @RequestParam String description) {
+        Topic topic = new Topic();
+        topic.setName(name);
+        topic.setDescription(description);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> user = userService.findByEmail(email);
+        if (user.isEmpty()) {
+            logger.error("User could not be found. This should NOT happen.");
+            return "redirect:/home";
+        }
+        topic.setUser(user.get());
+        Topic retTopic = topicService.save(topic);
+        if (retTopic == null) {
+            logger.error("Topic could not be created. Name: {} Description: {}", name, description);
+            return "redirect:/home";
+        }
+        model.addAttribute("isAuthenticated", true);
+        return "redirect:/home";
     }
 }
