@@ -87,7 +87,7 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/item/edit/{id}")
+    @GetMapping("/item/edit/{id}") // TODO: make it put
     public String editItem(@PathVariable Long id, Model model) {
         Optional<Item> item = itemService.findById(id);
         if (item.isPresent()) {
@@ -101,7 +101,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/item/edit/{id}")
+    @PostMapping("/item/edit/{id}") // TODO: make it put
     public String saveEditedItem(@PathVariable Long id, Model model,  @RequestParam String text, @RequestParam String nextAt) {
         Optional<Item> returned = itemService.findById(id);
         if (returned.isEmpty()) {
@@ -170,5 +170,18 @@ public class AuthController {
         }
         model.addAttribute("isAuthenticated", true);
         return "redirect:/home";
+    }
+
+    @GetMapping("/item/delete/{id}") // TODO: make it delete
+    public String deleteItem(@PathVariable Long id, Model model) {
+        Optional<Item> item = itemService.findById(id);
+        if (item.isEmpty()) {
+            logger.error("Item could not be found to delete. Id: {}", id);
+            return "redirect:/home";
+        }
+        itemService.deleteById(id);
+        model.addAttribute("isAuthenticated", true);
+        Long topicId = item.get().getTopic().getId();
+        return "redirect:/items/" + topicId;
     }
 }

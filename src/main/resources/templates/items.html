@@ -14,6 +14,7 @@
             <th>Text</th>
             <th>Next Will Be Sent</th>
             <th>Edit</th>
+            <th>Delete</th>
         </tr>
         </thead>
         <tbody>
@@ -23,6 +24,11 @@
             <td>
                 <a th:href="@{/item/edit/{id}(id=${item.id})}" class="btn btn-primary">
                     <i class="fas fa-edit"></i>
+                </a>
+            </td>
+            <td>
+                <a th:href="@{/item/delete/{id}(id=${item.id})}" class="btn btn-primary">
+                    <i class="fas fa-trash"></i>
                 </a>
             </td>
         </tr>
