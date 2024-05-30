@@ -1,7 +1,12 @@
 package com.erayoezer.acmeshop.controller.frontend;
 
-import com.erayoezer.acmeshop.model.User;
+import com.erayoezer.acmeshop.model.Item;
+import com.erayoezer.acmeshop.model.Topic;
+import com.erayoezer.acmeshop.service.ItemService;
+import com.erayoezer.acmeshop.service.TopicService;
 import com.erayoezer.acmeshop.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -9,22 +14,32 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
+    private final TopicService topicService;
+    private final ItemService itemService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
-            UserService userService
+            UserService userService,
+            TopicService topicService,
+            ItemService itemService
     ) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
+        this.topicService = topicService;
+        this.itemService = itemService;
     }
 
     @GetMapping("/login")
@@ -45,9 +60,63 @@ public class AuthController {
 
     @GetMapping("/home")
     public String showHomePage(Model model) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        model.addAttribute("username", username);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        model.addAttribute("email", email);
+        List<Topic> topicsByEmail = topicService.findAllByEmail(email);
+        model.addAttribute("topics", topicsByEmail);
         return "home";
+    }
+
+    @GetMapping("/items/{id}")
+    public String getTopicItems(@PathVariable Long id, Model model) {
+        Optional<Topic> topic = topicService.findById(id);
+        if (topic.isPresent()) {
+            Topic retTopic = topic.get();
+            model.addAttribute("topic", retTopic);
+            List<Item> itemsByTopic = itemService.findByTopic(retTopic);
+            model.addAttribute("items", itemsByTopic);
+            return "items";
+        } else {
+            logger.error("Topic was returned but couldn't be found now. This should NOT happen.");
+            return "redirect:/home";
+        }
+    }
+
+    @GetMapping("/item/edit/{id}")
+    public String editItem(@PathVariable Long id, Model model) {
+        Optional<Item> item = itemService.findById(id);
+        if (item.isPresent()) {
+            Item retItem = item.get();
+            model.addAttribute("item", retItem);
+            return "itemEdit";
+        } else {
+            logger.error("Item was returned but couldn't be found now. This should NOT happen.");
+            return "redirect:/home";
+        }
+    }
+
+    @PostMapping("/item/edit/{id}")
+    public String saveEditedItem(@PathVariable Long id, Model model,  @RequestParam String text, @RequestParam String nextAt) {
+        Optional<Item> returned = itemService.findById(id);
+        if (returned.isEmpty()) {
+            logger.error("Item could not be found for item editing. This should NOT happen.");
+        }
+        Item item = returned.get();
+        item.setText(text);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        try {
+            item.setNextAt(formatter.parse(nextAt));
+        } catch (Exception e) {
+            logger.error("Date conversion error. String: {} Error: {}", nextAt, e.getMessage());
+        }
+        itemService.save(item);
+        Optional<Topic> topic = topicService.findById(item.getTopic().getId());
+        if (topic.isEmpty()) {
+            logger.error("Topic could not be found for item editing. This should NOT happen.");
+            return "redirect:/home";
+        }
+        Long topicId = topic.get().getId();
+        return "redirect:/items/" + topicId;
     }
 
     @GetMapping("/")

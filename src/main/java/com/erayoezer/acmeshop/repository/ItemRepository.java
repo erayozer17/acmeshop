@@ -1,6 +1,7 @@
 package com.erayoezer.acmeshop.repository;
 
 import com.erayoezer.acmeshop.model.Item;
+import com.erayoezer.acmeshop.model.Topic;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,5 +16,5 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query("SELECT i FROM Item i WHERE i.sent = false AND i.nextAt < :now")
     List<Item> findItemsToBeProcessed(@Param("now") Date now, Pageable pageable);
-
+    List<Item> findByTopic(Topic topic);
 }

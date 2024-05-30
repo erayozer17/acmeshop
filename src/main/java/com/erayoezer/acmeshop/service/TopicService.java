@@ -61,6 +61,10 @@ public class TopicService {
         return topicRepository.save(topic);
     }
 
+    public List<Topic> findAllByEmail(String email) {
+        return topicRepository.findAllByEmail(email);
+    }
+
     public boolean existsById(Long id) {
         return findById(id).isPresent();
     }

@@ -1,6 +1,7 @@
 package com.erayoezer.acmeshop.service;
 
 import com.erayoezer.acmeshop.model.Item;
+import com.erayoezer.acmeshop.model.Topic;
 import com.erayoezer.acmeshop.repository.ItemRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,10 @@ public class ItemService {
 
     public Optional<Item> findById(Long id) {
         return itemRepository.findById(id);
+    }
+
+    public List<Item> findByTopic(Topic topic) {
+        return itemRepository.findByTopic(topic);
     }
 
     public Item save(Item topic) {

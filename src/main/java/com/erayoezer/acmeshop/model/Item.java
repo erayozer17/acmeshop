@@ -26,7 +26,7 @@ public class Item {
     @NotNull
     private Boolean sent = false;
 
-    @Column(updatable = false, name = "next_at")
+    @Column(name = "next_at")
     private Date nextAt;
 
     @Lob // This annotation indicates that the content should be stored as a large object

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Items</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+    <!-- Font Awesome CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <h2>Welcome, <span th:text="${email}"></span>!</h2>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit" class="btn btn-primary">Logout</button>
+    </form>
+
+    <form th:action="@{/item/edit/{id}(id=${item.id})}" th:object="${item}" method="post" class="mt-3">
+        <div class="form-group">
+            <label for="text">Text</label>
+            <input type="text" id="text" th:field="*{text}" class="form-control" required />
+        </div>
+        <div class="form-group">
+            <label for="nextAt">Next At</label>
+            <input type="text" id="nextAt" th:field="*{nextAt}" class="form-control" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+</body>
+</html>
