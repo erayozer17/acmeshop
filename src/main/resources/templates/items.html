@@ -26,14 +26,16 @@
     <table class="table table-striped mt-3">
         <thead class="thead-dark">
         <tr>
+            <th></th>
             <th>Text</th>
             <th>Next Will Be Sent</th>
             <th>Edit</th>
             <th>Delete</th>
         </tr>
         </thead>
-        <tbody>
+        <tbody id="sortable">
         <tr th:each="item : ${items}">
+            <td class="sortable-icon"><i class="fas fa-grip-vertical"></i></td>
             <td th:text="${item.text}">Name</td>
             <td th:text="${item.dateRepresentation}">Description</td>
             <td>
@@ -59,6 +61,21 @@
             form.style.display = "none";
         }
     }
+    $(function () {
+        $("tbody").sortable({
+            items: "tr",
+            cursor: "move",
+            opacity: 0.6,
+            update: function () {
+                // Send an AJAX request to update the order of the items in the database
+            }
+        });
+    });
 </script>
+<style>
+    .sortable-icon i {
+        color: gray;
+    }
+</style>
 </body>
 </html>
