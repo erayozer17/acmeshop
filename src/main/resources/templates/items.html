@@ -34,7 +34,7 @@
         </tr>
         </thead>
         <tbody id="sortable">
-        <tr th:each="item : ${items}">
+        <tr th:each="item : ${items}" th:data-id="${item.id}">
             <td class="sortable-icon"><i class="fas fa-grip-vertical"></i></td>
             <td th:text="${item.text}">Name</td>
             <td th:text="${item.dateRepresentation}">Description</td>
@@ -68,6 +68,40 @@
             opacity: 0.6,
             update: function () {
                 // Send an AJAX request to update the order of the items in the database
+            }
+        });
+    });
+
+    $(function () {
+        var csrfToken = $("meta[name='_csrf']").attr("content");
+        var csrfHeader = $("meta[name='_csrf_header']").attr("content");
+        $("#sortable").sortable({
+            items: "tr",
+            cursor: "move",
+            opacity: 0.6,
+            update: function (event, ui) {
+                var itemOrders = $("#sortable tr").map(function (index) {
+                    return {
+                        id: $(this).data("id"),
+                        order: index + 1
+                    };
+                }).get();
+
+                $.ajax({
+                    url: "/item/reorder",
+                    type: "POST",
+                    data: JSON.stringify(itemOrders),
+                    contentType: "application/json",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(csrfHeader, csrfToken);
+                    },
+                    success: function (response) {
+                        console.log("Order updated successfully");
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error updating order:", error);
+                    }
+                });
             }
         });
     });

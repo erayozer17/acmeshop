@@ -92,9 +92,9 @@ public class TopicService {
             String response = openAIService.sendRequest(prompt);
             logger.info(String.format("Response is received: %s", response));
             List<Item> items = splitStringIntoItems(response, topic);
-            List<Item> itemsWithDates = setDatesToItems(items);
-            itemRepository.saveAll(itemsWithDates);
-            logger.info(String.format("%d items are saved for topicId: %d", itemsWithDates.size(), topic.getId()));
+            List<Item> itemsWithDatesAndOrders = setDatesAndOrderToItems(items);
+            itemRepository.saveAll(itemsWithDatesAndOrders);
+            logger.info(String.format("%d items are saved for topicId: %d", itemsWithDatesAndOrders.size(), topic.getId()));
             topic.setGenerated(true);
             topicRepository.save(topic);
             logger.info(String.format("topicId: %d set to generated", topic.getId()));
@@ -115,7 +115,7 @@ public class TopicService {
                 .collect(Collectors.toList());
     }
 
-    private List<Item> setDatesToItems(List<Item> items) {
+    private List<Item> setDatesAndOrderToItems(List<Item> items) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime nextDayAt8AM = now.plusDays(1).with(LocalTime.of(8, 0)); //TODO: make time configurable
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
@@ -124,6 +124,7 @@ public class TopicService {
             LocalDateTime dateForItem = nextDayAt8AM.plusDays(i); //TODO: make every x days configurable
             String formattedDate = dateForItem.format(formatter);
             item.setNextAt(Timestamp.valueOf(formattedDate));
+            item.setItemOrder(i+1);
             logger.info("Date for {}: {}", item.getId(), formattedDate);
         }
         return items;

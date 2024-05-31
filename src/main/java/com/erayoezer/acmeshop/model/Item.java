@@ -1,6 +1,7 @@
 package com.erayoezer.acmeshop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -18,6 +19,9 @@ public class Item {
     private Long id;
 
     private String text;
+
+    @Column(name = "item_order")
+    private Integer itemOrder;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "topic_id", nullable = false)
@@ -87,6 +91,14 @@ public class Item {
 
     public void setNextAt(Date nextAt) {
         this.nextAt = nextAt;
+    }
+
+    public Integer getItemOrder() {
+        return itemOrder;
+    }
+
+    public void setItemOrder(Integer itemOrder) {
+        this.itemOrder = itemOrder;
     }
 
     public String getContent() {

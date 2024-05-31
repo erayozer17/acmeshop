@@ -1,11 +1,13 @@
 package com.erayoezer.acmeshop.controller.frontend;
 
 import com.erayoezer.acmeshop.model.Item;
+import com.erayoezer.acmeshop.model.ItemOrder;
 import com.erayoezer.acmeshop.model.Topic;
 import com.erayoezer.acmeshop.model.User;
 import com.erayoezer.acmeshop.service.ItemService;
 import com.erayoezer.acmeshop.service.TopicService;
 import com.erayoezer.acmeshop.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -84,6 +87,7 @@ public class AuthController {
             model.addAttribute("topic", retTopic);
             List<Item> itemsByTopic = itemService.findByTopic(retTopic);
             itemsByTopic.forEach(item -> item.setDateRepresentation(itemService.getDateRepresentation(item.getNextAt())));
+            itemsByTopic.sort(Comparator.comparing(Item::getItemOrder));
             model.addAttribute("items", itemsByTopic);
             model.addAttribute("isAuthenticated", true);
             model.addAttribute("topicId", id);
@@ -227,5 +231,17 @@ public class AuthController {
         itemService.save(newItem);
         model.addAttribute("isAuthenticated", true);
         return "redirect:/items/" + id;
+    }
+
+    @PostMapping("/item/reorder")
+    public String reorderItems(@RequestBody List<ItemOrder> itemOrders) {
+        Long topicId = 0L;
+        for (ItemOrder itemOrder : itemOrders) {
+            Item item = itemService.findById(itemOrder.getId()).orElseThrow(() -> new EntityNotFoundException("Item not found"));
+            item.setItemOrder(itemOrder.getOrder());
+            itemService.save(item);
+            topicId = item.getTopic().getId();
+        }
+        return "redirect:/items/" + topicId;
     }
 }
