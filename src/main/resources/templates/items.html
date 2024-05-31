@@ -8,6 +8,21 @@
     <h3 th:text="${topic.name}"></h3><br>
     <h2>Description: </h2>
     <h3 th:text="${topic.description}"></h3>
+
+    <!-- Button to open the form -->
+    <button class="btn btn-success mb-3" onclick="toggleForm()">Create New Item</button>
+
+    <!-- Form to create a new item -->
+    <div id="createItemForm" style="display: none;">
+        <form th:action="@{/item/create/{topicId}(topicId=${topicId})}" method="post">
+            <div class="form-group">
+                <label for="text">Item Text</label>
+                <input type="text" class="form-control" id="text" name="text" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
     <table class="table table-striped mt-3">
         <thead class="thead-dark">
         <tr>
@@ -35,5 +50,15 @@
         </tbody>
     </table>
 </div>
+<script>
+    function toggleForm() {
+        var form = document.getElementById("createItemForm");
+        if (form.style.display === "none") {
+            form.style.display = "block";
+        } else {
+            form.style.display = "none";
+        }
+    }
+</script>
 </body>
 </html>

@@ -17,7 +17,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,6 +84,7 @@ public class AuthController {
             List<Item> itemsByTopic = itemService.findByTopic(retTopic);
             model.addAttribute("items", itemsByTopic);
             model.addAttribute("isAuthenticated", true);
+            model.addAttribute("topicId", id);
             return "items";
         } else {
             logger.error("Topic was returned but couldn't be found now. This should NOT happen.");
@@ -195,5 +200,29 @@ public class AuthController {
         topicService.deleteById(id);
         model.addAttribute("isAuthenticated", true);
         return "redirect:/home";
+    }
+
+    @PostMapping("/item/create/{id}")
+    public String createItem(@PathVariable Long id, Model model, @RequestParam String text) {
+        Optional<Topic> topic = topicService.findById(id);
+        if (topic.isEmpty()) {
+            logger.error("Topic could not be found. This should NOT happen.");
+            return "redirect:/home";
+        }
+        Optional<Item> item = itemService.findLatestItemByTopicId(id);
+        if (item.isEmpty()) {
+            logger.error("Item could not be found. This should NOT happen.");
+            return "redirect:/home";
+        }
+        Date dateOfLastItem = item.get().getNextAt();
+        Instant newInstant = dateOfLastItem.toInstant().plus(Duration.ofDays(1));
+        Timestamp newTimestamp = Timestamp.from(newInstant);
+        Item newItem = new Item();
+        newItem.setNextAt(newTimestamp);
+        newItem.setText(text);
+        newItem.setTopic(topic.get());
+        itemService.save(newItem);
+        model.addAttribute("isAuthenticated", true);
+        return "redirect:/items/" + id;
     }
 }

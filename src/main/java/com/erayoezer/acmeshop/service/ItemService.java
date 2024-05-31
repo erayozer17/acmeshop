@@ -88,4 +88,8 @@ public class ItemService {
             itemRepository.save(item);
         }
     }
+
+    public Optional<Item> findLatestItemByTopicId(Long topicId) {
+        return itemRepository.findLatestItemByNextAtByTopicId(topicId);
+    }
 }
