@@ -24,10 +24,10 @@ public class ItemService {
     private static final SimpleDateFormat OUTPUT_FORMAT = new SimpleDateFormat("dd MMMM yyyy HH:mm");
 
     @Autowired
-    ItemRepository itemRepository;
+    private ItemRepository itemRepository;
 
     @Autowired
-    MailService mailService;
+    private MailService mailService;
 
     @Autowired
     private OpenAIService openAIService;
