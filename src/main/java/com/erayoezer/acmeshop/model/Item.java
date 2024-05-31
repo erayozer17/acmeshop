@@ -6,10 +6,12 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.validation.constraints.NotNull;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
 @Entity
+@Access(AccessType.FIELD)
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -35,6 +37,9 @@ public class Item {
 
     @Version
     private Long version;
+
+    @Transient
+    private String dateRepresentation;
 
     public Long getId() {
         return id;
@@ -70,6 +75,14 @@ public class Item {
 
     public Date getNextAt() {
         return nextAt;
+    }
+
+    public void setDateRepresentation(String date) {
+        this.dateRepresentation = date;
+    }
+
+    public String getDateRepresentation() {
+        return dateRepresentation;
     }
 
     public void setNextAt(Date nextAt) {

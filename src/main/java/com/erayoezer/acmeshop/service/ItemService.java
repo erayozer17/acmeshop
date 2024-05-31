@@ -11,7 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +21,8 @@ import java.util.Optional;
 public class ItemService {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
-    
+    private static final SimpleDateFormat OUTPUT_FORMAT = new SimpleDateFormat("dd MMMM yyyy HH:mm");
+
     @Autowired
     ItemRepository itemRepository;
 
@@ -62,6 +65,19 @@ public class ItemService {
         return findById(id).isPresent();
     }
 
+    public String getDateRepresentation(Date nextAt) {
+        return OUTPUT_FORMAT.format(nextAt);
+    }
+
+    public Date setDateFromString(String nextAt) throws ParseException {
+        try {
+            return OUTPUT_FORMAT.parse(nextAt);
+        } catch (ParseException e) {
+            logger.error("Date could not be parsed. Date: {} Error: {}", nextAt, e.getMessage());
+            throw e;
+        }
+    }
+
     public Optional<Long> deleteById(Long id) {
         if (existsById(id)) {
             itemRepository.deleteById(id);
@@ -72,7 +88,7 @@ public class ItemService {
     }
 
     @Transactional
-    public void processNecessaryItems(Date now) {
+    public void processNecessaryItems(java.sql.Date now) {
         int returnedTopicsSize = 10;
         Pageable pageable = PageRequest.of(0, returnedTopicsSize);
         List<Item> itemsToBeProcessed = itemRepository.findItemsToBeProcessed(now, pageable);

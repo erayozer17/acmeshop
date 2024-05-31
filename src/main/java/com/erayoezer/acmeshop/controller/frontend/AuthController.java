@@ -18,6 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -82,6 +83,7 @@ public class AuthController {
             Topic retTopic = topic.get();
             model.addAttribute("topic", retTopic);
             List<Item> itemsByTopic = itemService.findByTopic(retTopic);
+            itemsByTopic.forEach(item -> item.setDateRepresentation(itemService.getDateRepresentation(item.getNextAt())));
             model.addAttribute("items", itemsByTopic);
             model.addAttribute("isAuthenticated", true);
             model.addAttribute("topicId", id);
@@ -97,6 +99,7 @@ public class AuthController {
         Optional<Item> item = itemService.findById(id);
         if (item.isPresent()) {
             Item retItem = item.get();
+            retItem.setDateRepresentation(itemService.getDateRepresentation(retItem.getNextAt()));
             model.addAttribute("item", retItem);
             model.addAttribute("isAuthenticated", true);
             return "itemEdit";
@@ -107,7 +110,7 @@ public class AuthController {
     }
 
     @PostMapping("/item/edit/{id}") // TODO: make it put
-    public String saveEditedItem(@PathVariable Long id, Model model,  @RequestParam String text, @RequestParam String nextAt) {
+    public String saveEditedItem(@PathVariable Long id, Model model,  @RequestParam String text, @RequestParam String dateRepresentation) {
         Optional<Item> returned = itemService.findById(id);
         if (returned.isEmpty()) {
             logger.error("Item could not be found for item editing. This should NOT happen.");
@@ -115,11 +118,11 @@ public class AuthController {
         }
         Item item = returned.get();
         item.setText(text);
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         try {
-            item.setNextAt(formatter.parse(nextAt));
-        } catch (Exception e) {
-            logger.error("Date conversion error. String: {} Error: {}", nextAt, e.getMessage());
+            item.setNextAt(itemService.setDateFromString(dateRepresentation));
+        } catch (ParseException e) {
+            logger.error("Date could not be parsed. Date: {} Error: {}", dateRepresentation, e.getMessage());
+            return "redirect:/home";
         }
         itemService.save(item);
         Optional<Topic> topic = topicService.findById(item.getTopic().getId());
