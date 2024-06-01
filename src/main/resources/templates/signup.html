@@ -6,6 +6,7 @@
 <div class="container">
     <h2>Sign Up</h2>
     <form th:action="@{/signup}" method="post">
+        <input type="hidden" id="timezoneInput" name="timezoneInput">
         <div class="form-group">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" class="form-control" required>
@@ -22,5 +23,13 @@
     </form>
     <p>Already have an account? <a th:href="@{/login}">Login</a></p>
 </div>
+<script th:inline="javascript">
+    try {
+        var timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        document.getElementById("timezoneInput").value = timezone;
+    } catch (error) {
+        console.error("Error retrieving timezone: " + error);
+    }
+</script>
 </body>
 </html>

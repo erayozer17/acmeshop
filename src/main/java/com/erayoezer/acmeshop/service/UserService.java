@@ -17,12 +17,18 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public User saveUser(String username, String email, String password) {
+    public User saveUser(String username, String email, String password, String timeZone, String gmtOffSet) {
         // TODO: add validation
         User user = new User();
         user.setFullName(username);
         user.setEmail(email);
+        if (timeZone.isEmpty()) {
+            gmtOffSet = "00:00";
+        }
+        user.setTimeZone(timeZone);
+        user.setGmtOffSet(gmtOffSet);
         user.setPassword(passwordEncoder.encode(password));
+
         return userRepository.save(user);
     }
 

@@ -13,8 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -92,7 +91,7 @@ public class TopicService {
             String response = openAIService.sendRequest(prompt);
             logger.info(String.format("Response is received: %s", response));
             List<Item> items = splitStringIntoItems(response, topic);
-            List<Item> itemsWithDatesAndOrders = setDatesAndOrderToItems(items);
+            List<Item> itemsWithDatesAndOrders = setDatesAndOrderToItems(items, topic);
             itemRepository.saveAll(itemsWithDatesAndOrders);
             logger.info(String.format("%d items are saved for topicId: %d", itemsWithDatesAndOrders.size(), topic.getId()));
             topic.setGenerated(true);
@@ -115,14 +114,19 @@ public class TopicService {
                 .collect(Collectors.toList());
     }
 
-    private List<Item> setDatesAndOrderToItems(List<Item> items) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime nextDayAt8AM = now.plusDays(1).with(LocalTime.of(8, 0)); //TODO: make time configurable
+    private List<Item> setDatesAndOrderToItems(List<Item> items, Topic topic) {
+        String timezone = topic.getUser().getTimeZone();
+        ZoneId zoneId = ZoneId.of(timezone);
+        LocalDateTime now = LocalDateTime.now(zoneId);
+        //TODO: make sending time configurable below
+        LocalDateTime nextDayAt8AM = now.plusDays(1).withHour(8).withMinute(0).withSecond(0).withNano(0);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         for (int i = 0; i < items.size(); i++) {
             Item item = items.get(i);
             LocalDateTime dateForItem = nextDayAt8AM.plusDays(i); //TODO: make every x days configurable
-            String formattedDate = dateForItem.format(formatter);
+            ZonedDateTime zonedDateTime = dateForItem.atZone(zoneId);
+            ZonedDateTime zonedDateTimeInGMT = zonedDateTime.withZoneSameInstant(ZoneId.of("GMT"));
+            String formattedDate = zonedDateTimeInGMT.format(formatter);
             item.setNextAt(Timestamp.valueOf(formattedDate));
             item.setItemOrder(i+1);
             logger.info("Date for {}: {}", item.getId(), formattedDate);

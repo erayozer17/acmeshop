@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -63,8 +64,10 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public String processSignup(@RequestParam String username, @RequestParam String email, @RequestParam String password) {
-        userService.saveUser(username, email, password);
+    public String processSignup(@RequestParam String timezoneInput, @RequestParam String username, @RequestParam String email, @RequestParam String password) {
+        ZoneId zoneId = ZoneId.of(timezoneInput);
+        String gmtOffset = zoneId.getRules().getOffset(Instant.now()).toString();
+        userService.saveUser(username, email, password, timezoneInput, gmtOffset);
         return "redirect:/login";
     }
 
