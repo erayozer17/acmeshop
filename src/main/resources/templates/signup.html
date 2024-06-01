@@ -5,11 +5,11 @@
 <div th:replace="fragments/navbar :: navbar"></div>
 <div class="container">
     <h2>Sign Up</h2>
-    <form th:action="@{/signup}" method="post">
+    <form th:action="@{/signup}" method="post" onsubmit="return validatePassword()">
         <input type="hidden" id="timezoneInput" name="timezoneInput">
         <div class="form-group">
             <label for="username">Username:</label>
-            <input type="text" id="username" name="username" class="form-control" required>
+            <input type="text" id="username" name="username" class="form-control" required minlength="3" maxlength="20" pattern="[a-zA-Z0-9]+" title="Username must be 3-20 characters long and can only contain letters and numbers">
         </div>
         <div class="form-group">
             <label for="email">Email:</label>
@@ -17,7 +17,11 @@
         </div>
         <div class="form-group">
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" class="form-control" required>
+            <input type="password" id="password" name="password" class="form-control" required minlength="8">
+        </div>
+        <div class="form-group">
+            <label for="passwordRepeat">Repeat Password:</label>
+            <input type="password" id="passwordRepeat" name="passwordRepeat" class="form-control" required>
         </div>
         <button type="submit" class="btn btn-primary">Sign Up</button>
     </form>
@@ -29,6 +33,16 @@
         document.getElementById("timezoneInput").value = timezone;
     } catch (error) {
         console.error("Error retrieving timezone: " + error);
+    }
+
+    function validatePassword() {
+        var password = document.getElementById("password").value;
+        var passwordRepeat = document.getElementById("passwordRepeat").value;
+        if (password != passwordRepeat) {
+            alert("Passwords do not match");
+            return false;
+        }
+        return true;
     }
 </script>
 </body>
