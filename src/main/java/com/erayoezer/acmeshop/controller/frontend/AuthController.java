@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -65,7 +66,13 @@ public class AuthController {
 
     @PostMapping("/signup")
     public String processSignup(@RequestParam String timezoneInput, @RequestParam String username, @RequestParam String email, @RequestParam String password) {
-        ZoneId zoneId = ZoneId.of(timezoneInput);
+        ZoneId zoneId;
+        try {
+            zoneId = ZoneId.of(timezoneInput);
+        } catch (DateTimeException dateTimeException) {
+            logger.error("Invalid ID for ZoneOffset, invalid format: {}", timezoneInput);
+            return "redirect:/signup";
+        }
         String gmtOffset = zoneId.getRules().getOffset(Instant.now()).toString();
         userService.saveUser(username, email, password, timezoneInput, gmtOffset);
         return "redirect:/login";
