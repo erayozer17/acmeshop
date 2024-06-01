@@ -105,7 +105,11 @@ public class ItemService {
         }
     }
 
-    public Optional<Item> findLatestItemByTopicId(Long topicId) {
+    public Optional<Item> findLatestItemByNextAt(Long topicId) {
         return itemRepository.findLatestItemByNextAtByTopicId(topicId);
+    }
+
+    public Optional<Item> findLatestItemByOrder(Long topicId) {
+        return itemRepository.getTopOrderByItemOrderDesc(topicId);
     }
 }

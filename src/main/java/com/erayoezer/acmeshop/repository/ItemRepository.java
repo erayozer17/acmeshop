@@ -20,4 +20,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByTopic(Topic topic);
     @Query("SELECT i FROM Item i WHERE i.topic.id = :topicId ORDER BY i.nextAt DESC LIMIT 1")
     Optional<Item> findLatestItemByNextAtByTopicId(@Param("topicId") Long topicId);
+    @Query("SELECT i FROM Item i WHERE i.topic.id = :topicId ORDER BY i.itemOrder DESC LIMIT 1")
+    Optional<Item> getTopOrderByItemOrderDesc(@Param("topicId") Long topicId);
 }

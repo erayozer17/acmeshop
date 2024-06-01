@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
@@ -216,18 +215,24 @@ public class AuthController {
             logger.error("Topic could not be found. This should NOT happen.");
             return "redirect:/home";
         }
-        Optional<Item> item = itemService.findLatestItemByTopicId(id);
-        if (item.isEmpty()) {
+        Optional<Item> latestItemByNextAt = itemService.findLatestItemByNextAt(id);
+        if (latestItemByNextAt.isEmpty()) {
             logger.error("Item could not be found. This should NOT happen.");
             return "redirect:/home";
         }
-        Date dateOfLastItem = item.get().getNextAt();
+        Optional<Item> latestItemByOrder = itemService.findLatestItemByOrder(id);
+        if (latestItemByOrder.isEmpty()) {
+            logger.error("Item could not be found. This should NOT happen.");
+            return "redirect:/home";
+        }
+        Date dateOfLastItem = latestItemByNextAt.get().getNextAt();
         Instant newInstant = dateOfLastItem.toInstant().plus(Duration.ofDays(1));
         Timestamp newTimestamp = Timestamp.from(newInstant);
         Item newItem = new Item();
         newItem.setNextAt(newTimestamp);
         newItem.setText(text);
         newItem.setTopic(topic.get());
+        newItem.setItemOrder(latestItemByOrder.get().getItemOrder() + 1);
         itemService.save(newItem);
         model.addAttribute("isAuthenticated", true);
         return "redirect:/items/" + id;
