@@ -10,7 +10,7 @@ import com.erayoezer.acmeshop.model.dto.LoginUserDto;
 import com.erayoezer.acmeshop.model.dto.RegisterUserDto;
 import com.erayoezer.acmeshop.model.User;
 import com.erayoezer.acmeshop.repository.UserRepository;
-import com.erayoezer.acmeshop.service.AuthenticationService;
+
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;

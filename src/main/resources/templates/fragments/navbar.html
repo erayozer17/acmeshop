@@ -29,7 +29,7 @@
             </ul>
             <ul class="navbar-nav">
                 <li class="nav-item" th:if="${isAuthenticated}">
-                    <a class="nav-link" href="#" th:href="@{/createTopic}">Create Topic</a>
+                    <a class="nav-link" href="#" th:href="@{/topics/create}">Create Topic</a>
                 </li>
                 <li class="nav-item" th:if="${isAuthenticated}">
                     <form th:action="@{/logout}" method="post">

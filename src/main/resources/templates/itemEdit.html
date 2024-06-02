@@ -9,7 +9,7 @@
         <button type="submit" class="btn btn-primary">Logout</button>
     </form>
 
-    <form th:action="@{/item/edit/{id}(id=${item.id})}" th:object="${item}" method="post" class="mt-3" style="position: relative;">
+    <form th:action="@{/items/edit/{id}(id=${item.id})}" th:object="${item}" method="post" class="mt-3" style="position: relative;">
         <div class="form-group">
             <label for="text">Text</label>
             <input type="text" id="text" th:field="*{text}" class="form-control" required />

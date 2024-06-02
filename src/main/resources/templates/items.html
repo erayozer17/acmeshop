@@ -14,7 +14,7 @@
 
     <!-- Form to create a new item -->
     <div id="createItemForm" style="display: none;">
-        <form th:action="@{/item/create/{topicId}(topicId=${topicId})}" method="post">
+        <form th:action="@{/items/create/{topicId}(topicId=${topicId})}" method="post">
             <div class="form-group">
                 <label for="text">Item Text</label>
                 <input type="text" class="form-control" id="text" name="text" required>
@@ -39,12 +39,12 @@
             <td th:text="${item.text}">Name</td>
             <td th:text="${item.dateRepresentation}">Description</td>
             <td>
-                <a th:href="@{/item/edit/{id}(id=${item.id})}" class="btn btn-primary">
+                <a th:href="@{/items/edit/{id}(id=${item.id})}" class="btn btn-primary">
                     <i class="fas fa-edit"></i>
                 </a>
             </td>
             <td>
-                <a th:href="@{/item/delete/{id}(id=${item.id})}" class="btn btn-primary">
+                <a th:href="@{/items/delete/{id}(id=${item.id})}" class="btn btn-primary">
                     <i class="fas fa-trash"></i>
                 </a>
             </td>
@@ -88,7 +88,7 @@
                 }).get();
 
                 $.ajax({
-                    url: "/item/reorder",
+                    url: "/items/reorder",
                     type: "POST",
                     data: JSON.stringify(itemOrders),
                     contentType: "application/json",
