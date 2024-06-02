@@ -5,12 +5,12 @@ public class EmailPayload {
     private Recipient[] to;
     private String subject;
     private String text;
+    private String html;
 
-    public EmailPayload(From from, Recipient[] to, String subject, String text) {
+    public EmailPayload(From from, Recipient[] to, String subject) {
         this.from = from;
         this.to = to;
         this.subject = subject;
-        this.text = text;
     }
 
     public From getFrom() {
@@ -43,6 +43,14 @@ public class EmailPayload {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getHtml() {
+        return html;
+    }
+
+    public void setHtml(String html) {
+        this.html = html;
     }
 }
 
