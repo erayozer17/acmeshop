@@ -1,6 +1,7 @@
 package com.erayoezer.acmeshop.service;
 
 import com.erayoezer.acmeshop.model.Item;
+import com.erayoezer.acmeshop.model.Topic;
 import com.erayoezer.acmeshop.repository.ItemRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,12 +21,13 @@ import java.util.Optional;
 public class ItemService {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
-    
-    @Autowired
-    ItemRepository itemRepository;
+    private static final SimpleDateFormat OUTPUT_FORMAT = new SimpleDateFormat("dd MMMM yyyy HH:mm");
 
     @Autowired
-    MailService mailService;
+    private ItemRepository itemRepository;
+
+    @Autowired
+    private MailService mailService;
 
     @Autowired
     private OpenAIService openAIService;
@@ -49,12 +53,29 @@ public class ItemService {
         return itemRepository.findById(id);
     }
 
+    public List<Item> findByTopic(Topic topic) {
+        return itemRepository.findByTopic(topic);
+    }
+
     public Item save(Item topic) {
         return itemRepository.save(topic);
     }
 
     public boolean existsById(Long id) {
         return findById(id).isPresent();
+    }
+
+    public String getDateRepresentation(Date nextAt) {
+        return OUTPUT_FORMAT.format(nextAt);
+    }
+
+    public Date setDateFromString(String nextAt) throws ParseException {
+        try {
+            return OUTPUT_FORMAT.parse(nextAt);
+        } catch (ParseException e) {
+            logger.error("Date could not be parsed. Date: {} Error: {}", nextAt, e.getMessage());
+            throw e;
+        }
     }
 
     public Optional<Long> deleteById(Long id) {
@@ -67,7 +88,7 @@ public class ItemService {
     }
 
     @Transactional
-    public void processNecessaryItems(Date now) {
+    public void processNecessaryItems(java.sql.Date now) {
         int returnedTopicsSize = 10;
         Pageable pageable = PageRequest.of(0, returnedTopicsSize);
         List<Item> itemsToBeProcessed = itemRepository.findItemsToBeProcessed(now, pageable);
@@ -75,6 +96,46 @@ public class ItemService {
         for (Item item : itemsToBeProcessed) {
             String topic = item.getTopic().getDescription();
             String itemText = item.getText();
+//      ### Instruction ###
+//            Explain [topic] comprehensively within the context of [context]. Your explanation should be thorough and
+//            detailed, covering all relevant aspects of the topic. Include multiple detailed examples to illustrate
+//            key points. After your explanation, create a small multi-selection quiz with [specific number] questions
+//            related to the topic. Provide the correct answers separately at the very end. Ensure the explanation
+//            and quiz are in [language].
+//
+//      ### Example ###
+//
+//            Explanation:
+//            - [Detailed explanation here with sub-sections if necessary]
+//
+//            Examples:
+//            1. [Detailed Example 1]
+//            2. [Detailed Example 2]
+//            3. [Detailed Example 3]
+//            ...
+//            N. [Detailed Example N]
+//
+//            Quiz:
+//            1. Question 1
+//                    - A. Option 1
+//                    - B. Option 2
+//                    - C. Option 3
+//            2. Question 2
+//                    - A. Option 1
+//                    - B. Option 2
+//                    - C. Option 3
+//            ...
+//            N. Question N
+//                    - A. Option 1
+//                    - B. Option 2
+//                    - C. Option 3
+//
+//            Answers:
+//            1. [Correct answer]
+//            2. [Correct answer]
+//            ...
+//            N. [Correct answer]
+
             String prompt = String.format("explain me %s comprehensively in context of %s. ", itemText, topic);
             String response = openAIService.sendRequest(prompt);
             item.setContent(response);
@@ -82,5 +143,13 @@ public class ItemService {
             item.setSent(true);
             itemRepository.save(item);
         }
+    }
+
+    public Optional<Item> findLatestItemByNextAt(Long topicId) {
+        return itemRepository.findLatestItemByNextAtByTopicId(topicId);
+    }
+
+    public Optional<Item> findLatestItemByOrder(Long topicId) {
+        return itemRepository.getTopOrderByItemOrderDesc(topicId);
     }
 }

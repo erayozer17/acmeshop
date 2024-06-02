@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head th:replace="fragments/header :: head(title='Items')"></head>
+<body>
+<div th:replace="fragments/navbar :: navbar"></div>
+<div class="container">
+    <h2>Name: </h2>
+    <h3 th:text="${topic.name}"></h3><br>
+    <h2>Description: </h2>
+    <h3 th:text="${topic.description}"></h3>
+
+    <!-- Button to open the form -->
+    <button class="btn btn-success mb-3" onclick="toggleForm()">Create New Item</button>
+
+    <!-- Form to create a new item -->
+    <div id="createItemForm" style="display: none;">
+        <form th:action="@{/items/create/{topicId}(topicId=${topicId})}" method="post">
+            <div class="form-group">
+                <label for="text">Item Text</label>
+                <input type="text" class="form-control" id="text" name="text" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+    <table class="table table-striped mt-3">
+        <thead class="thead-dark">
+        <tr>
+            <th></th>
+            <th>Text</th>
+            <th>Next Will Be Sent</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody id="sortable">
+        <tr th:each="item : ${items}" th:data-id="${item.id}">
+            <td class="sortable-icon"><i class="fas fa-grip-vertical"></i></td>
+            <td th:text="${item.text}">Name</td>
+            <td th:text="${item.dateRepresentation}">Description</td>
+            <td>
+                <a th:href="@{/items/edit/{id}(id=${item.id})}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </td>
+            <td>
+                <a th:href="@{/items/delete/{id}(id=${item.id})}" class="btn btn-primary">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+    function toggleForm() {
+        var form = document.getElementById("createItemForm");
+        if (form.style.display === "none") {
+            form.style.display = "block";
+        } else {
+            form.style.display = "none";
+        }
+    }
+    $(function () {
+        $("tbody").sortable({
+            items: "tr",
+            cursor: "move",
+            opacity: 0.6,
+            update: function () {
+                // Send an AJAX request to update the order of the items in the database
+            }
+        });
+    });
+
+    $(function () {
+        var csrfToken = $("meta[name='_csrf']").attr("content");
+        var csrfHeader = $("meta[name='_csrf_header']").attr("content");
+        $("#sortable").sortable({
+            items: "tr",
+            cursor: "move",
+            opacity: 0.6,
+            update: function (event, ui) {
+                var itemOrders = $("#sortable tr").map(function (index) {
+                    return {
+                        id: $(this).data("id"),
+                        order: index + 1
+                    };
+                }).get();
+
+                $.ajax({
+                    url: "/items/reorder",
+                    type: "POST",
+                    data: JSON.stringify(itemOrders),
+                    contentType: "application/json",
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(csrfHeader, csrfToken);
+                    },
+                    success: function (response) {
+                        console.log("Order updated successfully");
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error updating order:", error);
+                    }
+                });
+            }
+        });
+    });
+</script>
+<style>
+    .sortable-icon i {
+        color: gray;
+    }
+</style>
+</body>
+</html>

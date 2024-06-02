@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head th:replace="fragments/header :: head(title='Home')"></head>
+<body>
+<div th:replace="fragments/navbar :: navbar"></div>
+<div class="container">
+    <h1>Topics</h1>
+    <table class="table table-striped mt-3">
+        <thead class="thead-dark">
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Items</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="topic : ${topics}">
+            <td th:text="${topic.name}">Name</td>
+            <td th:text="${topic.description}">Description</td>
+            <td>
+                <a th:href="@{/items/{id}(id=${topic.id})}"
+                   th:classappend="${topic.generated} ? '' : ' disabled'"
+                   th:attr="disabled=${!topic.generated}"
+                   class="btn btn-primary">
+                    <i class="fas fa-list"></i>
+                </a>
+            </td>
+            <td>
+                <a th:href="@{/topics/delete/{id}(id=${topic.id})}" class="btn btn-primary">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
