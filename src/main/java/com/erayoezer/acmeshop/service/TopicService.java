@@ -85,33 +85,37 @@ public class TopicService {
         logger.info(String.format("%d topics are retrieved to be processed.", topicsToBeGenerated.size()));
         for (Topic topic : topicsToBeGenerated) {
             String description = topic.getDescription();
-//            ### Instruction ###
-//            Create an extensive and consistent list of all necessary items related to the topic of [topic]
-//            from [starting level] to [ending level] level. Ensure that the list is comprehensive, covering
-//            every aspect of the topic without any omissions.
-//
-//            ### Requirements ###
-//            - The list must contain at least [minimum number] items and can include up to [maximum number] items if necessary to ensure completeness.
-//            - Each item should be detailed and, if extensive, broken down into smaller, manageable units.
-//            - Each unit must be explainable in a bite-sized manner, ensuring clarity and ease of understanding.
-//            - Items must be consistent in format and style, maintaining uniformity throughout the list.
-//            - Return only the items, each starting with a dash and on a new line.
-//            - Provide the list in [language].
-//
-//            ### Example ###
-//            (Provide an example relevant to the user's topic and levels to illustrate the desired output format and detail)
-//
-//            ### Output Format ###
-//            - Item 1
-//            - Item 2
-//            - Item 3
-//            ...
-//            - Item N
-//
-//            You MUST ensure that the response is extensive, consistent, and follows the specified format while comprehensively covering the topic within the given levels.
+            // TODO: make starting level, ending level, minimum number, maximum number and language configurable
+            // from [starting level] to [ending level] level
+            // The list must contain at least [minimum number] items and can include up to [maximum number] items if necessary to ensure completeness.
+            // Provide the list in [language]
+            String prompt = String.format("""
+                                        ### Instruction ###
+                                        Create an extensive and consistent list of all necessary items related to the topic of %s .
+                                        Ensure that the list is comprehensive, covering
+                                        every aspect of the topic without any omissions.
 
-            String prompt = String.format("list me all topics comprehensively related to %s. " +
-                    "return only the items, each starting nothing but with a new line", description);
+                                        ### Requirements ###
+                                        - The list must contain at least 40 items and can include up to 80 items if necessary to ensure completeness.
+                                        - Each item should be detailed and, if extensive, broken down into smaller, manageable units.
+                                        - Each unit must be explainable in a bite-sized manner, ensuring clarity and ease of understanding.
+                                        - Items must be consistent in format and style, maintaining uniformity throughout the list.
+                                        - Return only the items, each starting with a dash and on a new line.
+                                        - Provide the list in english.
+
+                                        ### Output Format ###
+                                        - Item 1
+                                        - Item 2
+                                        - Item 3
+                                        ...
+                                        - Item N
+
+                                        You MUST ensure that the response is extensive, consistent, and follows the specified format while 
+                                        comprehensively covering the topic within the given levels.
+                            """
+                    , description);
+//            String prompt = String.format("list me all topics comprehensively related to %s. " +
+//                    "return only the items, each starting nothing but with a new line", description);
             logger.info(String.format("Prompt is sent: %s", prompt));
             String response = openAIService.sendRequest(prompt);
             logger.info(String.format("Response is received: %s", response));
@@ -153,7 +157,7 @@ public class TopicService {
             ZonedDateTime zonedDateTimeInGMT = zonedDateTime.withZoneSameInstant(ZoneId.of("GMT"));
             String formattedDate = zonedDateTimeInGMT.format(formatter);
             item.setNextAt(Timestamp.valueOf(formattedDate));
-            item.setItemOrder(i+1);
+            item.setItemOrder(i + 1);
             logger.info("Date for {}: {}", item.getId(), formattedDate);
         }
         return items;

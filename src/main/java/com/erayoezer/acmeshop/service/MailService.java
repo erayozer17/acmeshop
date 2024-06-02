@@ -43,12 +43,16 @@ public class MailService {
         content = sanitizeInput(content);
 
         try {
-
-
             From from = new From(fromEmail);
             Recipient[] to = { new Recipient(toEmail) };
 
-            EmailPayload payload = new EmailPayload(from, to, subject, content);
+            EmailPayload payload = new EmailPayload(from, to, subject);
+
+            if (!content.trim().startsWith("<")) {
+                content = "<html><body>" + content + "</body></html>";
+            }
+
+            payload.setHtml(content);
 
             Gson gson = new Gson();
             String jsonInputString = gson.toJson(payload);

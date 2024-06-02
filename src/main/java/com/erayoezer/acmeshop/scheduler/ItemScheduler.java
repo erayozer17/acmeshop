@@ -21,7 +21,8 @@ public class ItemScheduler {
 
     private final Lock itemProcessingLock = new ReentrantLock();
 
-    @Scheduled(cron = "0 1 8 * * ?") // Every day 08:01
+//    @Scheduled(cron = "0 1 8 * * ?") // Every day 08:01
+    @Scheduled(fixedRate = 60000) // Run every 60 seconds (1 minute)
     public void scheduleItemProcessing() {
         if (itemProcessingLock.tryLock()) {
             try {
