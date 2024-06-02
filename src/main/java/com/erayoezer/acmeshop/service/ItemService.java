@@ -96,6 +96,46 @@ public class ItemService {
         for (Item item : itemsToBeProcessed) {
             String topic = item.getTopic().getDescription();
             String itemText = item.getText();
+//      ### Instruction ###
+//            Explain [topic] comprehensively within the context of [context]. Your explanation should be thorough and
+//            detailed, covering all relevant aspects of the topic. Include multiple detailed examples to illustrate
+//            key points. After your explanation, create a small multi-selection quiz with [specific number] questions
+//            related to the topic. Provide the correct answers separately at the very end. Ensure the explanation
+//            and quiz are in [language].
+//
+//      ### Example ###
+//
+//            Explanation:
+//            - [Detailed explanation here with sub-sections if necessary]
+//
+//            Examples:
+//            1. [Detailed Example 1]
+//            2. [Detailed Example 2]
+//            3. [Detailed Example 3]
+//            ...
+//            N. [Detailed Example N]
+//
+//            Quiz:
+//            1. Question 1
+//                    - A. Option 1
+//                    - B. Option 2
+//                    - C. Option 3
+//            2. Question 2
+//                    - A. Option 1
+//                    - B. Option 2
+//                    - C. Option 3
+//            ...
+//            N. Question N
+//                    - A. Option 1
+//                    - B. Option 2
+//                    - C. Option 3
+//
+//            Answers:
+//            1. [Correct answer]
+//            2. [Correct answer]
+//            ...
+//            N. [Correct answer]
+
             String prompt = String.format("explain me %s comprehensively in context of %s. ", itemText, topic);
             String response = openAIService.sendRequest(prompt);
             item.setContent(response);
