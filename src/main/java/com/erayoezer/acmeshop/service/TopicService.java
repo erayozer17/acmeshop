@@ -13,8 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +60,10 @@ public class TopicService {
         return topicRepository.save(topic);
     }
 
+    public List<Topic> findAllByEmail(String email) {
+        return topicRepository.findAllByEmail(email);
+    }
+
     public boolean existsById(Long id) {
         return findById(id).isPresent();
     }
@@ -82,15 +85,40 @@ public class TopicService {
         logger.info(String.format("%d topics are retrieved to be processed.", topicsToBeGenerated.size()));
         for (Topic topic : topicsToBeGenerated) {
             String description = topic.getDescription();
+//            ### Instruction ###
+//            Create an extensive and consistent list of all necessary items related to the topic of [topic]
+//            from [starting level] to [ending level] level. Ensure that the list is comprehensive, covering
+//            every aspect of the topic without any omissions.
+//
+//            ### Requirements ###
+//            - The list must contain at least [minimum number] items and can include up to [maximum number] items if necessary to ensure completeness.
+//            - Each item should be detailed and, if extensive, broken down into smaller, manageable units.
+//            - Each unit must be explainable in a bite-sized manner, ensuring clarity and ease of understanding.
+//            - Items must be consistent in format and style, maintaining uniformity throughout the list.
+//            - Return only the items, each starting with a dash and on a new line.
+//            - Provide the list in [language].
+//
+//            ### Example ###
+//            (Provide an example relevant to the user's topic and levels to illustrate the desired output format and detail)
+//
+//            ### Output Format ###
+//            - Item 1
+//            - Item 2
+//            - Item 3
+//            ...
+//            - Item N
+//
+//            You MUST ensure that the response is extensive, consistent, and follows the specified format while comprehensively covering the topic within the given levels.
+
             String prompt = String.format("list me all topics comprehensively related to %s. " +
                     "return only the items, each starting nothing but with a new line", description);
             logger.info(String.format("Prompt is sent: %s", prompt));
             String response = openAIService.sendRequest(prompt);
             logger.info(String.format("Response is received: %s", response));
             List<Item> items = splitStringIntoItems(response, topic);
-            List<Item> itemsWithDates = setDatesToItems(items);
-            itemRepository.saveAll(itemsWithDates);
-            logger.info(String.format("%d items are saved for topicId: %d", itemsWithDates.size(), topic.getId()));
+            List<Item> itemsWithDatesAndOrders = setDatesAndOrderToItems(items, topic);
+            itemRepository.saveAll(itemsWithDatesAndOrders);
+            logger.info(String.format("%d items are saved for topicId: %d", itemsWithDatesAndOrders.size(), topic.getId()));
             topic.setGenerated(true);
             topicRepository.save(topic);
             logger.info(String.format("topicId: %d set to generated", topic.getId()));
@@ -111,15 +139,21 @@ public class TopicService {
                 .collect(Collectors.toList());
     }
 
-    private List<Item> setDatesToItems(List<Item> items) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime nextDayAt8AM = now.plusDays(1).with(LocalTime.of(8, 0)); //TODO: make time configurable
+    private List<Item> setDatesAndOrderToItems(List<Item> items, Topic topic) {
+        String timezone = topic.getUser().getTimeZone();
+        ZoneId zoneId = ZoneId.of(timezone);
+        LocalDateTime now = LocalDateTime.now(zoneId);
+        //TODO: make sending time configurable below
+        LocalDateTime nextDayAt8AM = now.plusDays(1).withHour(8).withMinute(0).withSecond(0).withNano(0);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         for (int i = 0; i < items.size(); i++) {
             Item item = items.get(i);
             LocalDateTime dateForItem = nextDayAt8AM.plusDays(i); //TODO: make every x days configurable
-            String formattedDate = dateForItem.format(formatter);
+            ZonedDateTime zonedDateTime = dateForItem.atZone(zoneId);
+            ZonedDateTime zonedDateTimeInGMT = zonedDateTime.withZoneSameInstant(ZoneId.of("GMT"));
+            String formattedDate = zonedDateTimeInGMT.format(formatter);
             item.setNextAt(Timestamp.valueOf(formattedDate));
+            item.setItemOrder(i+1);
             logger.info("Date for {}: {}", item.getId(), formattedDate);
         }
         return items;

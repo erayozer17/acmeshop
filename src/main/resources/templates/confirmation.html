@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head(title='Confirm Account')"></head>
+<body>
+<div th:replace="fragments/navbar :: navbar"></div>
+<div class="container">
+    <h2>Confirm Account</h2>
+    <p>A confirmation email has been sent to your email address. Please click the link in the email to confirm your account.</p>
+<!--    <p>Didn't receive the email? <a th:href="@{/resend-confirmation-email}">Resend confirmation email</a></p>-->
+</div>
+</body>
+</html>

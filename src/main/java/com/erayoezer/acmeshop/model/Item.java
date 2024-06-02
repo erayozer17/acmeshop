@@ -1,21 +1,27 @@
 package com.erayoezer.acmeshop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.validation.constraints.NotNull;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
 @Entity
+@Access(AccessType.FIELD)
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String text;
+
+    @Column(name = "item_order")
+    private Integer itemOrder;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "topic_id", nullable = false)
@@ -26,7 +32,7 @@ public class Item {
     @NotNull
     private Boolean sent = false;
 
-    @Column(updatable = false, name = "next_at")
+    @Column(name = "next_at")
     private Date nextAt;
 
     @Lob // This annotation indicates that the content should be stored as a large object
@@ -35,6 +41,9 @@ public class Item {
 
     @Version
     private Long version;
+
+    @Transient
+    private String dateRepresentation;
 
     public Long getId() {
         return id;
@@ -72,8 +81,24 @@ public class Item {
         return nextAt;
     }
 
+    public void setDateRepresentation(String date) {
+        this.dateRepresentation = date;
+    }
+
+    public String getDateRepresentation() {
+        return dateRepresentation;
+    }
+
     public void setNextAt(Date nextAt) {
         this.nextAt = nextAt;
+    }
+
+    public Integer getItemOrder() {
+        return itemOrder;
+    }
+
+    public void setItemOrder(Integer itemOrder) {
+        this.itemOrder = itemOrder;
     }
 
     public String getContent() {

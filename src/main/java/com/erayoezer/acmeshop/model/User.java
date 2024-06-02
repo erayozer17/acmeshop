@@ -29,6 +29,18 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "time_zone")
+    private String timeZone;
+
+    @Column(name = "gmt_off_set")
+    private String gmtOffSet;
+
+    @Column(name = "confirmed")
+    private boolean confirmed = false;
+
+    @Column(name = "confirmation_key")
+    private String confirmationKey;
+
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private Date createdAt;
@@ -141,5 +153,37 @@ public class User implements UserDetails {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
+    }
+
+    public String getGmtOffSet() {
+        return gmtOffSet;
+    }
+
+    public void setGmtOffSet(String gmtOffSet) {
+        this.gmtOffSet = gmtOffSet;
+    }
+
+    public boolean isConfirmed() {
+        return confirmed;
+    }
+
+    public void setConfirmed(boolean confirmed) {
+        this.confirmed = confirmed;
+    }
+
+    public String getConfirmationKey() {
+        return confirmationKey;
+    }
+
+    public void setConfirmationKey(String confirmationKey) {
+        this.confirmationKey = confirmationKey;
     }
 }

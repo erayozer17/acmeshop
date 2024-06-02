@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head th:replace="fragments/header :: head(title='Item Edit')"></head>
+<body>
+<div th:replace="fragments/navbar :: navbar"></div>
+<div class="container">
+    <h2>Welcome, <span th:text="${email}"></span>!</h2>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit" class="btn btn-primary">Logout</button>
+    </form>
+
+    <form th:action="@{/items/edit/{id}(id=${item.id})}" th:object="${item}" method="post" class="mt-3" style="position: relative;">
+        <div class="form-group">
+            <label for="text">Text</label>
+            <input type="text" id="text" th:field="*{text}" class="form-control" required />
+        </div>
+        <div class="form-group">
+            <label for="dateRepresentation">Next At</label>
+            <input type="text" id="dateRepresentation" th:field="*{dateRepresentation}" th:value="${#temporals.format(item.nextAt.toLocalDateTime(), 'dd MMMM yyyy HH:mm')}" class="form-control" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+<script>
+    $(function () {
+        $('#dateRepresentation').flatpickr({
+            dateFormat: "d M Y H:i",
+            enableTime: true,
+            time_24hr: true
+        });
+    });
+</script>
+</body>
+</html>
