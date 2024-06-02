@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.UUID;
+
 // TODO: refactor logic into services
 @Controller
 public class AuthController {
@@ -38,6 +40,20 @@ public class AuthController {
         return "login";
     }
 
+    @PostMapping("/login")
+    public String processLogin(@RequestParam String username, @RequestParam String password, Model model) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password)
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            return "redirect:/home";
+        } catch (BadCredentialsException e) {
+            model.addAttribute("error", "Invalid username or password");
+            return "login";
+        }
+    }
+
     @GetMapping("/signup")
     public String showSignupForm(Model model) {
         model.addAttribute("isAuthenticated", false);
@@ -54,21 +70,21 @@ public class AuthController {
             return "redirect:/signup";
         }
         String gmtOffset = zoneId.getRules().getOffset(Instant.now()).toString();
-        userService.saveUser(username, email, password, timezoneInput, gmtOffset);
-        return "redirect:/login";
+        String confirmationKey = UUID.randomUUID().toString();
+        userService.saveUser(username, email, password, timezoneInput, gmtOffset, confirmationKey);
+        userService.sendConfirmationEmail(email, confirmationKey);
+        return "redirect:/confirmation";
     }
 
-    @PostMapping("/login")
-    public String processLogin(@RequestParam String username, @RequestParam String password, Model model) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            return "redirect:/home";
-        } catch (BadCredentialsException e) {
-            model.addAttribute("error", "Invalid username or password");
-            return "login";
-        }
+    @GetMapping("/confirmation")
+    public String showConfirmation(Model model) {
+        model.addAttribute("isAuthenticated", false);
+        return "confirmation";
+    }
+
+    @GetMapping("/confirm/{uuid}")
+    public String confirmUser(@PathVariable String uuid) {
+        userService.confirmUserByConfirmationKey(uuid);
+        return "redirect:/login";
     }
 }

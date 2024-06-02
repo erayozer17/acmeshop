@@ -24,6 +24,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (user.isEmpty()) {
             throw new UsernameNotFoundException("User not found");
         }
+        User retUser = user.get();
+        if (!retUser.isConfirmed()) {
+            // TODO: implement an appropriate exception
+            throw new UsernameNotFoundException("User is not confirmed. Email: " + username);
+        }
         return user.get();
     }
 }
