@@ -19,17 +19,25 @@
             <input type="text" id="description" name="description" class="form-control" required>
         </div>
         <div class="form-group">
-<!--            Make it time picker-->
             <label for="everydayAt">Every Day At:</label>
-            <input type="text" id="everydayAt" name="everydayAt" class="form-control" required>
+            <input type="text" id="everydayAt" name="everydayAt" value="08:00" class="form-control" required>
         </div>
         <div class="form-group">
-<!--            Make it number-->
             <label for="everyNthDay">Every Nth Day:</label>
-            <input type="text" id="everyNthDay" name="everyNthDay" class="form-control" required>
+            <input type="number" id="everyNthDay" name="everyNthDay" value="1" class="form-control" min="1" max="30" required>
         </div>
         <button type="submit" class="btn btn-primary">Create</button>
     </form>
 </div>
+<script>
+    $(function () {
+        $('#everydayAt').flatpickr({
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true
+        });
+    });
+</script>
 </body>
 </html>

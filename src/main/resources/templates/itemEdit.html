@@ -23,8 +23,11 @@
 </div>
 <script>
     $(function () {
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
         $('#dateRepresentation').flatpickr({
             dateFormat: "d M Y",
+            minDate: tomorrow
         });
     });
 </script>
