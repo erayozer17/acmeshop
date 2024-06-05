@@ -26,10 +26,56 @@
             <label for="everyNthDay">Every Nth Day:</label>
             <input type="number" id="everyNthDay" name="everyNthDay" value="1" class="form-control" min="1" max="30" required>
         </div>
+        <div class="form-group">
+            <label for="slider">Minimum and Maximum Number of Items:</label>
+            <div id="slider"></div>
+            <div id="slider-values">
+                <span id="min-value">10</span> - <span id="max-value">30</span>
+            </div>
+            <input type="hidden" id="minimumNumberItems" name="minimumNumberItems">
+            <input type="hidden" id="maximumNumberItems" name="maximumNumberItems">
+        </div>
+        <div class="form-group">
+            <label for="language">Language:</label>
+            <select id="language" name="language" class="form-control" required>
+                <option value="English" selected>English</option>
+                <option value="Turkish">Türkçe</option>
+                <option value="German">Deutsch</option>
+                <option value="Hindi">हिन्दी</option>
+                <option value="French">Français</option>
+                <option value="Spanish">Español</option>
+                <option value="Italian">Italiano</option>
+                <option value="Portuguese">Português</option>
+                <option value="Swedish">Svenska</option>
+                <option value="Arabic">العربية</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="startingLevel">Starting Level:</label>
+            <select id="startingLevel" name="startingLevel" class="form-control" required>
+                <option value="Absolute Beginner" selected>Absolute Beginner</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Pre-Intermediate">Pre-Intermediate</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+                <option value="Expert">Expert</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="endingLevel">Ending Level:</label>
+            <select id="endingLevel" name="endingLevel" class="form-control" required>
+                <option value="Beginner" selected>Beginner</option>
+                <option value="Pre-Intermediate">Pre-Intermediate</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+                <option value="Expert">Expert</option>
+                <option value="Master">Master</option>
+            </select>
+        </div>
         <button type="submit" class="btn btn-primary">Create</button>
     </form>
 </div>
-<script>
+<script th:inline="javascript">
     $(function () {
         $('#everydayAt').flatpickr({
             enableTime: true,
@@ -37,6 +83,32 @@
             dateFormat: "H:i",
             time_24hr: true
         });
+    });
+
+    var slider = document.getElementById('slider');
+    noUiSlider.create(slider, {
+        start: [10, 30],
+        connect: true,
+        range: {
+            'min': 1,
+            'max': 50
+        },
+        step: 1,
+        format: {
+            to: function (value) {
+                return value.toFixed(0);
+            },
+            from: function (value) {
+                return parseFloat(value);
+            }
+        }
+    });
+
+    slider.noUiSlider.on('update', function (values) {
+        document.getElementById('minimumNumberItems').value = values[0];
+        document.getElementById('maximumNumberItems').value = values[1];
+        document.getElementById('min-value').textContent = values[0];
+        document.getElementById('max-value').textContent = values[1];
     });
 </script>
 </body>
