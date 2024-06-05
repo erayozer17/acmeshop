@@ -16,7 +16,7 @@
         </div>
         <div class="form-group">
             <label for="dateRepresentation">Next At</label>
-            <input type="text" id="dateRepresentation" th:field="*{dateRepresentation}" th:value="${#temporals.format(item.nextAt.toLocalDateTime(), 'dd MMMM yyyy HH:mm')}" class="form-control" required />
+            <input type="text" id="dateRepresentation" th:field="*{dateRepresentation}" th:value="${#temporals.format(item.nextAt.toLocalDateTime(), 'dd MMMM yyyy')}" class="form-control" required />
         </div>
         <button type="submit" class="btn btn-primary">Save</button>
     </form>
@@ -24,9 +24,9 @@
 <script>
     $(function () {
         $('#dateRepresentation').flatpickr({
-            dateFormat: "d M Y H:i",
-            enableTime: true,
-            time_24hr: true
+            dateFormat: "d M Y",
+<!--            enableTime: true,-->
+<!--            time_24hr: true-->
         });
     });
 </script>

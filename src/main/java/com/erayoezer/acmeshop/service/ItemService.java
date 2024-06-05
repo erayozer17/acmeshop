@@ -11,6 +11,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,7 +26,8 @@ import java.util.Optional;
 public class ItemService {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
-    private static final SimpleDateFormat OUTPUT_FORMAT = new SimpleDateFormat("dd MMMM yyyy HH:mm");
+    private static final SimpleDateFormat OUTPUT_FORMAT_TO_SAVE = new SimpleDateFormat("dd MMMM yyyy HH:mm");
+    private static final SimpleDateFormat OUTPUT_FORMAT = new SimpleDateFormat("dd MMMM yyyy");
 
     @Autowired
     private ItemRepository itemRepository;
@@ -69,9 +75,16 @@ public class ItemService {
         return OUTPUT_FORMAT.format(nextAt);
     }
 
-    public Date setDateFromString(String nextAt) throws ParseException {
+    public Date setDateFromString(String nextAt, String everydayAt, String timeZone) throws ParseException {
         try {
-            return OUTPUT_FORMAT.parse(nextAt);
+            ZoneId berlinZone = ZoneId.of(timeZone);
+            ZoneId gmtZone = ZoneId.of("GMT");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            LocalTime localTime = LocalTime.parse(everydayAt, formatter);
+            ZonedDateTime berlinTime = ZonedDateTime.of(LocalDate.now(), localTime, berlinZone);
+            ZonedDateTime gmtTime = berlinTime.withZoneSameInstant(gmtZone);
+            String fullDateAndTimeToSave = nextAt + " " + gmtTime.format(formatter);
+            return OUTPUT_FORMAT_TO_SAVE.parse(fullDateAndTimeToSave);
         } catch (ParseException e) {
             logger.error("Date could not be parsed. Date: {} Error: {}", nextAt, e.getMessage());
             throw e;

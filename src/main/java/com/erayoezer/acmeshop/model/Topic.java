@@ -28,6 +28,12 @@ public class Topic {
     private String description;
 
     @NotNull
+    private String everydayAt;
+
+    @NotNull
+    private int everyNthDay;
+
+    @NotNull
     private Boolean generated = false;
 
     @Version
@@ -118,5 +124,22 @@ public class Topic {
     public void removeItem(Item item) {
         items.remove(item);
         item.setTopic(null);
+    }
+
+    public @NotNull String getEverydayAt() {
+        return everydayAt;
+    }
+
+    public void setEverydayAt(@NotNull String everydayAt) {
+        this.everydayAt = everydayAt;
+    }
+
+    @NotNull
+    public int getEveryNthDay() {
+        return everyNthDay;
+    }
+
+    public void setEveryNthDay(@NotNull int everyNthDay) {
+        this.everyNthDay = everyNthDay;
     }
 }

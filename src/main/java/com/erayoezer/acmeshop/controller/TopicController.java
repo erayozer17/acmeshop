@@ -36,10 +36,16 @@ public class TopicController {
     }
 
     @PostMapping("/topics/create")
-    public String createTopicPost(Model model,  @RequestParam String name, @RequestParam String description) {
+    public String createTopicPost(Model model,
+                                  @RequestParam String name,
+                                  @RequestParam String description,
+                                  @RequestParam String everydayAt,
+                                  @RequestParam String everyNthDay) {
         Topic topic = new Topic();
         topic.setName(name);
         topic.setDescription(description);
+        topic.setEverydayAt(everydayAt);
+        topic.setEveryNthDay(Integer.parseInt(everyNthDay));
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<User> user = userService.findByEmail(email);
         if (user.isEmpty()) {

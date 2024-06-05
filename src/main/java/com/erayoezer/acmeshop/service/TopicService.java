@@ -147,12 +147,11 @@ public class TopicService {
         String timezone = topic.getUser().getTimeZone();
         ZoneId zoneId = ZoneId.of(timezone);
         LocalDateTime now = LocalDateTime.now(zoneId);
-        //TODO: make sending time configurable below
-        LocalDateTime nextDayAt8AM = now.plusDays(1).withHour(8).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime nextDayAtGivenTime = getNextDayAtGivenTime(topic, now);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         for (int i = 0; i < items.size(); i++) {
             Item item = items.get(i);
-            LocalDateTime dateForItem = nextDayAt8AM.plusDays(i); //TODO: make every x days configurable
+            LocalDateTime dateForItem = nextDayAtGivenTime.plusDays(topic.getEveryNthDay() * i);
             ZonedDateTime zonedDateTime = dateForItem.atZone(zoneId);
             ZonedDateTime zonedDateTimeInGMT = zonedDateTime.withZoneSameInstant(ZoneId.of("GMT"));
             String formattedDate = zonedDateTimeInGMT.format(formatter);
@@ -161,5 +160,24 @@ public class TopicService {
             logger.info("Date for {}: {}", item.getId(), formattedDate);
         }
         return items;
+    }
+
+    private static LocalDateTime getNextDayAtGivenTime(Topic topic, LocalDateTime now) {
+        String everydayAt = topic.getEverydayAt();
+        if (everydayAt.isEmpty()) {
+            everydayAt = "8:00";
+        }
+        String[] hourAndMinutes = everydayAt.split(":");
+        LocalDateTime nextDayAt8AM = now
+                .plusDays(1)
+                .withHour(
+                        Integer.parseInt(hourAndMinutes[0])
+                )
+                .withMinute(
+                        Integer.parseInt(hourAndMinutes[1])
+                )
+                .withSecond(0)
+                .withNano(0);
+        return nextDayAt8AM;
     }
 }

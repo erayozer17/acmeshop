@@ -81,7 +81,11 @@ public class ItemController {
         Item item = returned.get();
         item.setText(text);
         try {
-            item.setNextAt(itemService.setDateFromString(dateRepresentation));
+            item.setNextAt(
+                    itemService.setDateFromString(
+                            dateRepresentation,
+                            item.getTopic().getEverydayAt(),
+                            item.getTopic().getUser().getTimeZone()));
         } catch (ParseException e) {
             logger.error("Date could not be parsed. Date: {} Error: {}", dateRepresentation, e.getMessage());
             return "redirect:/home";
@@ -127,7 +131,7 @@ public class ItemController {
             return "redirect:/home";
         }
         Date dateOfLastItem = latestItemByNextAt.get().getNextAt();
-        Instant newInstant = dateOfLastItem.toInstant().plus(Duration.ofDays(1));
+        Instant newInstant = dateOfLastItem.toInstant().plus(Duration.ofDays(topic.get().getEveryNthDay()));
         Timestamp newTimestamp = Timestamp.from(newInstant);
         Item newItem = new Item();
         newItem.setNextAt(newTimestamp);
