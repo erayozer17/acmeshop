@@ -153,7 +153,7 @@ public class ItemService {
                                   N. [Correct answer]"""
                     , itemText, topic);
 //            String prompt = String.format("explain me %s comprehensively in context of %s. ", itemText, topic);
-            String response = openAIService.sendRequest(prompt);
+            String response = openAIService.sendRequest(prompt, item.getTopic().getUser().getAiModel());
             item.setContent(response);
             mailService.sendEmail(item.getTopic().getUser().getEmail(), itemText, response);
             item.setSent(true);

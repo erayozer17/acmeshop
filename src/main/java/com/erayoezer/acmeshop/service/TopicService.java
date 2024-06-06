@@ -116,7 +116,7 @@ public class TopicService {
 //            String prompt = String.format("list me all topics comprehensively related to %s. " +
 //                    "return only the items, each starting nothing but with a new line", description);
             logger.info(String.format("Prompt is sent: %s", prompt));
-            String response = openAIService.sendRequest(prompt);
+            String response = openAIService.sendRequest(prompt, topic.getUser().getAiModel());
             logger.info(String.format("Response is received: %s", response));
             List<Item> items = splitStringIntoItems(response, topic);
             List<Item> itemsWithDatesAndOrders = setDatesAndOrderToItems(items, topic);
