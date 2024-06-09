@@ -36,7 +36,8 @@ public class HomeController {
     }
 
     @GetMapping("/contact")
-    public String toContact() {
-        return "redirect:/contact";
+    public String toContact(Model model) {
+        model.addAttribute("isAuthenticated", true);
+        return "contact";
     }
 }
