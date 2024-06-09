@@ -61,6 +61,10 @@ public class ItemService {
         return itemRepository.findByTopic(topic);
     }
 
+    public List<Item> findByTopicWhereNotSent(Topic topic) {
+        return itemRepository.findByTopicAndSentIsFalse(topic);
+    }
+
     public Item save(Item topic) {
         return itemRepository.save(topic);
     }

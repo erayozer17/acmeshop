@@ -43,7 +43,7 @@ public class ItemController {
         if (topic.isPresent()) {
             Topic retTopic = topic.get();
             model.addAttribute("topic", retTopic);
-            List<Item> itemsByTopic = itemService.findByTopic(retTopic);
+            List<Item> itemsByTopic = itemService.findByTopicWhereNotSent(retTopic);
             itemsByTopic.forEach(item -> item.setDateRepresentation(itemService.getDateRepresentation(item.getNextAt())));
             itemsByTopic.sort(Comparator.comparing(Item::getItemOrder));
             model.addAttribute("items", itemsByTopic);
