@@ -29,7 +29,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     @Query("SELECT i FROM Item i WHERE i.topic.id = :topicId ORDER BY i.itemOrder DESC LIMIT 1")
     Optional<Item> getTopOrderByItemOrderDesc(@Param("topicId") Long topicId);
 
-    List<Item> findByTopicOrderByItemOrder(Topic topic);
+    List<Item> findByTopicAndSentIsFalseOrderByItemOrder(Topic topic);
 
     List<Item> findByTopicAndSentIsFalse(Topic topic);
 }

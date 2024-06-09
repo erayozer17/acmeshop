@@ -179,7 +179,7 @@ public class ItemService {
     }
 
     public void rearrangeItems(Topic topic, String givenStartDate) {
-        List<Item> items = itemRepository.findByTopicOrderByItemOrder(topic);
+        List<Item> items = itemRepository.findByTopicAndSentIsFalseOrderByItemOrder(topic);
         String timezone = topic.getUser().getTimeZone();
         ZoneId zoneId = ZoneId.of(timezone);
         LocalDateTime startDate = getDateForGivenDate(topic, givenStartDate);
