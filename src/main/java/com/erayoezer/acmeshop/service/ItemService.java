@@ -128,11 +128,16 @@ public class ItemService {
 
                                   Examples:
                                   1. [Detailed Example 1]
+                                  2. [Detailed Example 2]
                                   ...
                                   N. [Detailed Example N]
 
                                   Quiz:
                                   1. Question 1
+                                          - A. Option 1
+                                          - B. Option 2
+                                          - C. Option 3
+                                  2. Question 2
                                           - A. Option 1
                                           - B. Option 2
                                           - C. Option 3
@@ -144,6 +149,7 @@ public class ItemService {
 
                                   Answers:
                                   1. [Correct answer]
+                                  2. [Correct answer]
                                   ...
                                   N. [Correct answer]
                                   

@@ -101,11 +101,13 @@ public class TopicService {
                                         - Item 1
                                         - Item 2
                                         - Item 3
+                                        - Item 4
                                         ...
                                         - Item N
 
                                         You MUST ensure that the response is extensive, consistent, and follows the specified format while 
-                                        comprehensively covering the topic within the given levels.
+                                        comprehensively covering the topic within the given levels. Return only the 
+                                        items, each starting with a dash and on a new line.
                             """
                     , description,
                     topic.getStartingLevel(),
