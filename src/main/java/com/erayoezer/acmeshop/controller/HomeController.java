@@ -34,4 +34,9 @@ public class HomeController {
     public String toHomePage() {
         return "redirect:/home";
     }
+
+    @GetMapping("/contact")
+    public String toContact() {
+        return "redirect:/contact";
+    }
 }
