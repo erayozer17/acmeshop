@@ -1,25 +1,19 @@
 package com.erayoezer.acmeshop.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.web.servlet.ModelAndView;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage())
-        );
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(CustomException.class)
+    public ModelAndView handleCustomException(CustomException ex) {
+        ModelAndView modelAndView = new ModelAndView("error");
+        modelAndView.addObject("status", ex.getStatus().value());
+        modelAndView.addObject("message", ex.getMessage());
+        modelAndView.addObject("isAuthenticated", ex.getAuthenticated());
+        modelAndView.setStatus(ex.getStatus());
+        return modelAndView;
     }
-
-    // Handle other exceptions here
 }

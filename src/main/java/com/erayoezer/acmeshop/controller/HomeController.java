@@ -32,6 +32,7 @@ public class HomeController {
 
     @GetMapping("/")
     public String toHomePage() {
+//        throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "This is a try out error", false);
         return "redirect:/home";
     }
 
