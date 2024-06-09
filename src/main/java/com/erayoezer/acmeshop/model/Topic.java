@@ -28,6 +28,27 @@ public class Topic {
     private String description;
 
     @NotNull
+    private String everydayAt;
+
+    @NotNull
+    private int everyNthDay;
+
+    @NotNull
+    private String startingLevel;
+
+    @NotNull
+    private int minimumNumberItems;
+
+    @NotNull
+    private String endingLevel;
+
+    @NotNull
+    private int maximumNumberItems;
+
+    @NotNull
+    private String language;
+
+    @NotNull
     private Boolean generated = false;
 
     @Version
@@ -118,5 +139,64 @@ public class Topic {
     public void removeItem(Item item) {
         items.remove(item);
         item.setTopic(null);
+    }
+
+    public @NotNull String getEverydayAt() {
+        return everydayAt;
+    }
+
+    public void setEverydayAt(@NotNull String everydayAt) {
+        this.everydayAt = everydayAt;
+    }
+
+    @NotNull
+    public int getEveryNthDay() {
+        return everyNthDay;
+    }
+
+    public void setEveryNthDay(@NotNull int everyNthDay) {
+        this.everyNthDay = everyNthDay;
+    }
+
+    public @NotNull String getStartingLevel() {
+        return startingLevel;
+    }
+
+    public void setStartingLevel(@NotNull String startingLevel) {
+        this.startingLevel = startingLevel;
+    }
+
+    @NotNull
+    public int getMinimumNumberItems() {
+        return minimumNumberItems;
+    }
+
+    public void setMinimumNumberItems(@NotNull int minimumNumberItems) {
+        this.minimumNumberItems = minimumNumberItems;
+    }
+
+    public @NotNull String getEndingLevel() {
+        return endingLevel;
+    }
+
+    public void setEndingLevel(@NotNull String endingLevel) {
+        this.endingLevel = endingLevel;
+    }
+
+    @NotNull
+    public int getMaximumNumberItems() {
+        return maximumNumberItems;
+    }
+
+    public void setMaximumNumberItems(@NotNull int maximumNumberItems) {
+        this.maximumNumberItems = maximumNumberItems;
+    }
+
+    public @NotNull String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(@NotNull String language) {
+        this.language = language;
     }
 }

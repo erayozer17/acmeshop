@@ -36,10 +36,26 @@ public class TopicController {
     }
 
     @PostMapping("/topics/create")
-    public String createTopicPost(Model model,  @RequestParam String name, @RequestParam String description) {
+    public String createTopicPost(Model model,
+                                  @RequestParam String name,
+                                  @RequestParam String description,
+                                  @RequestParam String everydayAt,
+                                  @RequestParam String everyNthDay,
+                                  @RequestParam String startingLevel,
+                                  @RequestParam String endingLevel,
+                                  @RequestParam int minimumNumberItems,
+                                  @RequestParam int maximumNumberItems,
+                                  @RequestParam String language) {
         Topic topic = new Topic();
         topic.setName(name);
         topic.setDescription(description);
+        topic.setEverydayAt(everydayAt);
+        topic.setEveryNthDay(Integer.parseInt(everyNthDay));
+        topic.setStartingLevel(startingLevel);
+        topic.setEndingLevel(endingLevel);
+        topic.setMinimumNumberItems(minimumNumberItems);
+        topic.setMaximumNumberItems(maximumNumberItems);
+        topic.setLanguage(language);
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<User> user = userService.findByEmail(email);
         if (user.isEmpty()) {

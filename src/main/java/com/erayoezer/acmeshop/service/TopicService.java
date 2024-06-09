@@ -85,39 +85,40 @@ public class TopicService {
         logger.info(String.format("%d topics are retrieved to be processed.", topicsToBeGenerated.size()));
         for (Topic topic : topicsToBeGenerated) {
             String description = topic.getDescription();
-            // TODO: make starting level, ending level, minimum number, maximum number and language configurable
-            // from [starting level] to [ending level] level
-            // The list must contain at least [minimum number] items and can include up to [maximum number] items if necessary to ensure completeness.
-            // Provide the list in [language]
             String prompt = String.format("""
                                         ### Instruction ###
-                                        Create an extensive and consistent list of all necessary items related to the topic of %s .
-                                        Ensure that the list is comprehensive, covering
-                                        every aspect of the topic without any omissions.
+                                        Create an extensive and consistent list of all necessary items related to the topic of %s from %s to %s level. The list must contain at least %d items and can include up to %d items if necessary to ensure completeness.
+                                        Ensure that the list is comprehensive, covering every aspect of the topic without any omissions.
+                                        Provide the list in %s
 
                                         ### Requirements ###
-                                        - The list must contain at least 40 items and can include up to 80 items if necessary to ensure completeness.
                                         - Each item should be detailed and, if extensive, broken down into smaller, manageable units.
                                         - Each unit must be explainable in a bite-sized manner, ensuring clarity and ease of understanding.
                                         - Items must be consistent in format and style, maintaining uniformity throughout the list.
                                         - Return only the items, each starting with a dash and on a new line.
-                                        - Provide the list in english.
 
                                         ### Output Format ###
                                         - Item 1
                                         - Item 2
                                         - Item 3
+                                        - Item 4
                                         ...
                                         - Item N
 
                                         You MUST ensure that the response is extensive, consistent, and follows the specified format while 
-                                        comprehensively covering the topic within the given levels.
+                                        comprehensively covering the topic within the given levels. Return only the 
+                                        items, each starting with a dash and on a new line.
                             """
-                    , description);
+                    , description,
+                    topic.getStartingLevel(),
+                    topic.getEndingLevel(),
+                    topic.getMinimumNumberItems(),
+                    topic.getMaximumNumberItems(),
+                    topic.getLanguage());
 //            String prompt = String.format("list me all topics comprehensively related to %s. " +
 //                    "return only the items, each starting nothing but with a new line", description);
             logger.info(String.format("Prompt is sent: %s", prompt));
-            String response = openAIService.sendRequest(prompt);
+            String response = openAIService.sendRequest(prompt, topic.getUser().getAiModel());
             logger.info(String.format("Response is received: %s", response));
             List<Item> items = splitStringIntoItems(response, topic);
             List<Item> itemsWithDatesAndOrders = setDatesAndOrderToItems(items, topic);
@@ -132,6 +133,7 @@ public class TopicService {
     private List<Item> splitStringIntoItems(String input, Topic topic) {
         return Stream.of(input.split("\n"))
                 .map(String::trim)
+                .filter(line -> !line.isEmpty())
                 .map(line -> line.replaceFirst("^[^a-zA-Z]*", ""))
                 .map(line -> {
                     Item item = new Item();
@@ -147,12 +149,11 @@ public class TopicService {
         String timezone = topic.getUser().getTimeZone();
         ZoneId zoneId = ZoneId.of(timezone);
         LocalDateTime now = LocalDateTime.now(zoneId);
-        //TODO: make sending time configurable below
-        LocalDateTime nextDayAt8AM = now.plusDays(1).withHour(8).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime nextDayAtGivenTime = getNextDayAtGivenTime(topic, now);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         for (int i = 0; i < items.size(); i++) {
             Item item = items.get(i);
-            LocalDateTime dateForItem = nextDayAt8AM.plusDays(i); //TODO: make every x days configurable
+            LocalDateTime dateForItem = nextDayAtGivenTime.plusDays(topic.getEveryNthDay() * i);
             ZonedDateTime zonedDateTime = dateForItem.atZone(zoneId);
             ZonedDateTime zonedDateTimeInGMT = zonedDateTime.withZoneSameInstant(ZoneId.of("GMT"));
             String formattedDate = zonedDateTimeInGMT.format(formatter);
@@ -161,5 +162,24 @@ public class TopicService {
             logger.info("Date for {}: {}", item.getId(), formattedDate);
         }
         return items;
+    }
+
+    private static LocalDateTime getNextDayAtGivenTime(Topic topic, LocalDateTime now) {
+        String everydayAt = topic.getEverydayAt();
+        if (everydayAt.isEmpty()) {
+            everydayAt = "8:00";
+        }
+        String[] hourAndMinutes = everydayAt.split(":");
+        LocalDateTime nextDayAt8AM = now
+                .plusDays(1)
+                .withHour(
+                        Integer.parseInt(hourAndMinutes[0])
+                )
+                .withMinute(
+                        Integer.parseInt(hourAndMinutes[1])
+                )
+                .withSecond(0)
+                .withNano(0);
+        return nextDayAt8AM;
     }
 }

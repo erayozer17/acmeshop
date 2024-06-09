@@ -35,7 +35,7 @@ public class OpenAIServiceTest {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
-        openAIService = new OpenAIService("apiKey", "apiUrl", "defaultModel", restTemplate, httpClient);
+        openAIService = new OpenAIService("apiKey", "apiUrl", httpClient);
     }
 
     @Test
@@ -48,7 +48,7 @@ public class OpenAIServiceTest {
         when(httpResponse.getEntity()).thenReturn(responseEntity);
         when(httpClient.execute(any(HttpPost.class))).thenReturn(httpResponse);
 
-        String result = openAIService.sendRequest(prompt);
+        String result = openAIService.sendRequest(prompt, null);
         assertEquals("", result);
     }
 

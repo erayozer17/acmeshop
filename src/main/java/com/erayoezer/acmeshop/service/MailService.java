@@ -5,6 +5,9 @@ import com.erayoezer.acmeshop.model.email.From;
 import com.erayoezer.acmeshop.model.email.Recipient;
 import com.google.gson.Gson;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +52,7 @@ public class MailService {
             EmailPayload payload = new EmailPayload(from, to, subject);
 
             if (!content.trim().startsWith("<")) {
-                content = "<html><body>" + content + "</body></html>";
+                content = convertMarkdownToHtml(content);
             }
 
             payload.setHtml(content);
@@ -96,5 +99,12 @@ public class MailService {
 
     private String sanitizeInput(String input) {
         return input.replaceAll("[\r\n]", "");
+    }
+
+    private String convertMarkdownToHtml(String markdownContent) {
+        Parser parser = Parser.builder().build();
+        Node document = parser.parse(markdownContent);
+        HtmlRenderer renderer = HtmlRenderer.builder().build();
+        return renderer.render(document);
     }
 }

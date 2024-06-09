@@ -1,5 +1,6 @@
 package com.erayoezer.acmeshop.service;
 
+import com.erayoezer.acmeshop.model.AiModel;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -14,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 
@@ -23,26 +23,20 @@ public class OpenAIService {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenAIService.class);
 
-    private final RestTemplate restTemplate;
     private final CloseableHttpClient httpClient;
     private final String apiKey;
     private final String apiUrl;
-    private final String defaultModel;
 
     @Autowired
     public OpenAIService(@Value("${openai.api.key}") String apiKey,
                          @Value("${openai.api.url}") String apiUrl,
-                         @Value("${openai.api.defaultModel}") String defaultModel,
-                         RestTemplate restTemplate,
                          CloseableHttpClient httpClient) {
-        this.restTemplate = restTemplate;
         this.httpClient = httpClient;
         this.apiKey = apiKey;
         this.apiUrl = apiUrl;
-        this.defaultModel = defaultModel;
     }
 
-    public String sendRequest(String prompt) {
+    public String sendRequest(String prompt, AiModel aiModel) {
         String responseBody = "";
         try {
             HttpPost request = new HttpPost(apiUrl);
@@ -50,7 +44,11 @@ public class OpenAIService {
             request.setHeader("Authorization", "Bearer " + apiKey);
 
             JSONObject json = new JSONObject();
-            json.put("model", defaultModel);
+            AiModel aiModelGet = aiModel;
+            if (aiModelGet == null) {
+                aiModelGet = AiModel.GPT3;
+            }
+            json.put("model", aiModelGet.getValue());
             json.put("temperature", 0.7);
 
             JSONObject message = new JSONObject();

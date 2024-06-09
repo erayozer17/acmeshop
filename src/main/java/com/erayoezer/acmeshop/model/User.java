@@ -53,6 +53,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Topic> topics = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ai_model")
+    private AiModel aiModel = AiModel.GPT3;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
@@ -185,5 +189,13 @@ public class User implements UserDetails {
 
     public void setConfirmationKey(String confirmationKey) {
         this.confirmationKey = confirmationKey;
+    }
+
+    public AiModel getAiModel() {
+        return aiModel;
+    }
+
+    public void setAiModel(AiModel aiModel) {
+        this.aiModel = aiModel;
     }
 }

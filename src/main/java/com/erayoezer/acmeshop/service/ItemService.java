@@ -11,6 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,7 +24,8 @@ import java.util.Optional;
 public class ItemService {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
-    private static final SimpleDateFormat OUTPUT_FORMAT = new SimpleDateFormat("dd MMMM yyyy HH:mm");
+    private static final SimpleDateFormat OUTPUT_FORMAT_TO_SAVE = new SimpleDateFormat("dd MMMM yyyy HH:mm");
+    private static final SimpleDateFormat OUTPUT_FORMAT = new SimpleDateFormat("dd MMMM yyyy");
 
     @Autowired
     private ItemRepository itemRepository;
@@ -57,6 +61,10 @@ public class ItemService {
         return itemRepository.findByTopic(topic);
     }
 
+    public List<Item> findByTopicWhereNotSent(Topic topic) {
+        return itemRepository.findByTopicAndSentIsFalse(topic);
+    }
+
     public Item save(Item topic) {
         return itemRepository.save(topic);
     }
@@ -69,9 +77,16 @@ public class ItemService {
         return OUTPUT_FORMAT.format(nextAt);
     }
 
-    public Date setDateFromString(String nextAt) throws ParseException {
+    public Date setDateFromString(String nextAt, String everydayAt, String timeZone) throws ParseException {
         try {
-            return OUTPUT_FORMAT.parse(nextAt);
+            ZoneId berlinZone = ZoneId.of(timeZone);
+            ZoneId gmtZone = ZoneId.of("GMT");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            LocalTime localTime = LocalTime.parse(everydayAt, formatter);
+            ZonedDateTime berlinTime = ZonedDateTime.of(LocalDate.now(), localTime, berlinZone);
+            ZonedDateTime gmtTime = berlinTime.withZoneSameInstant(gmtZone);
+            String fullDateAndTimeToSave = nextAt + " " + gmtTime.format(formatter);
+            return OUTPUT_FORMAT_TO_SAVE.parse(fullDateAndTimeToSave);
         } catch (ParseException e) {
             logger.error("Date could not be parsed. Date: {} Error: {}", nextAt, e.getMessage());
             throw e;
@@ -94,7 +109,7 @@ public class ItemService {
         List<Item> itemsToBeProcessed = itemRepository.findItemsToBeProcessed(now, pageable);
         logger.info(String.format("%d items are retrieved to be processed.", itemsToBeProcessed.size()));
         for (Item item : itemsToBeProcessed) {
-            String topic = item.getTopic().getDescription();
+            String topicDescription = item.getTopic().getDescription();
             String itemText = item.getText();
             // TODO: make number of quiz questions and language configurable
             String prompt = String.format(
@@ -104,7 +119,7 @@ public class ItemService {
                                   detailed, covering all relevant aspects of the topic. Include multiple detailed examples to illustrate
                                   key points. After your explanation, create a small multi-selection quiz with 5 questions
                                   related to the topic. Provide the correct answers separately at the very end. Ensure the explanation
-                                  and quiz are in english. Return the result in nicely formatted html format.
+                                  and quiz are in %s. Return the result in nicely formatted html format.
 
                             ### Example ###
 
@@ -114,7 +129,6 @@ public class ItemService {
                                   Examples:
                                   1. [Detailed Example 1]
                                   2. [Detailed Example 2]
-                                  3. [Detailed Example 3]
                                   ...
                                   N. [Detailed Example N]
 
@@ -137,10 +151,14 @@ public class ItemService {
                                   1. [Correct answer]
                                   2. [Correct answer]
                                   ...
-                                  N. [Correct answer]"""
-                    , itemText, topic);
+                                  N. [Correct answer]
+                                  
+                                  in html format.
+                                  <!DOCTYPE html> <html> <head> </head> <body> </body> </html>
+                    """
+                    , itemText, topicDescription, item.getTopic().getLanguage());
 //            String prompt = String.format("explain me %s comprehensively in context of %s. ", itemText, topic);
-            String response = openAIService.sendRequest(prompt);
+            String response = openAIService.sendRequest(prompt, item.getTopic().getUser().getAiModel());
             item.setContent(response);
             mailService.sendEmail(item.getTopic().getUser().getEmail(), itemText, response);
             item.setSent(true);
@@ -152,7 +170,51 @@ public class ItemService {
         return itemRepository.findLatestItemByNextAtByTopicId(topicId);
     }
 
+    public Optional<Item> findFirstItemByNextAt(Long topicId) {
+        return itemRepository.findFirstItemByNextAtByTopicId(topicId);
+    }
+
     public Optional<Item> findLatestItemByOrder(Long topicId) {
         return itemRepository.getTopOrderByItemOrderDesc(topicId);
+    }
+
+    public void rearrangeItems(Topic topic, String givenStartDate) {
+        List<Item> items = itemRepository.findByTopicOrderByItemOrder(topic);
+        String timezone = topic.getUser().getTimeZone();
+        ZoneId zoneId = ZoneId.of(timezone);
+        LocalDateTime startDate = getDateForGivenDate(topic, givenStartDate);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        for (int i = 0; i < items.size(); i++) {
+            Item item = items.get(i);
+            LocalDateTime dateForItem = startDate.plusDays(topic.getEveryNthDay() * i);
+            ZonedDateTime zonedDateTime = dateForItem.atZone(zoneId);
+            ZonedDateTime zonedDateTimeInGMT = zonedDateTime.withZoneSameInstant(ZoneId.of("GMT"));
+            String formattedDate = zonedDateTimeInGMT.format(formatter);
+            item.setNextAt(Timestamp.valueOf(formattedDate));
+            logger.info("Date is rearranged for {}: {}", item.getId(), formattedDate);
+        }
+        itemRepository.saveAll(items);
+    }
+
+    private static LocalDateTime getDateForGivenDate(Topic topic, String startDate) {
+        startDate += " 00:00"; // append time to be able to parse TODO: find a way to remove this
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm");
+        LocalDateTime processedStartDate = LocalDateTime.parse(startDate, formatter);
+
+        String everydayAt = topic.getEverydayAt();
+        if (everydayAt.isEmpty()) {
+            everydayAt = "8:00";
+        }
+        String[] hourAndMinutes = everydayAt.split(":");
+        return processedStartDate
+                .withHour(
+                        Integer.parseInt(hourAndMinutes[0])
+                )
+                .withMinute(
+                        Integer.parseInt(hourAndMinutes[1])
+                )
+                .withSecond(0)
+                .withNano(0);
     }
 }

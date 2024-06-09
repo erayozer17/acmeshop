@@ -43,7 +43,7 @@ public class ItemController {
         if (topic.isPresent()) {
             Topic retTopic = topic.get();
             model.addAttribute("topic", retTopic);
-            List<Item> itemsByTopic = itemService.findByTopic(retTopic);
+            List<Item> itemsByTopic = itemService.findByTopicWhereNotSent(retTopic);
             itemsByTopic.forEach(item -> item.setDateRepresentation(itemService.getDateRepresentation(item.getNextAt())));
             itemsByTopic.sort(Comparator.comparing(Item::getItemOrder));
             model.addAttribute("items", itemsByTopic);
@@ -81,7 +81,11 @@ public class ItemController {
         Item item = returned.get();
         item.setText(text);
         try {
-            item.setNextAt(itemService.setDateFromString(dateRepresentation));
+            item.setNextAt(
+                    itemService.setDateFromString(
+                            dateRepresentation,
+                            item.getTopic().getEverydayAt(),
+                            item.getTopic().getUser().getTimeZone()));
         } catch (ParseException e) {
             logger.error("Date could not be parsed. Date: {} Error: {}", dateRepresentation, e.getMessage());
             return "redirect:/home";
@@ -127,7 +131,7 @@ public class ItemController {
             return "redirect:/home";
         }
         Date dateOfLastItem = latestItemByNextAt.get().getNextAt();
-        Instant newInstant = dateOfLastItem.toInstant().plus(Duration.ofDays(1));
+        Instant newInstant = dateOfLastItem.toInstant().plus(Duration.ofDays(topic.get().getEveryNthDay()));
         Timestamp newTimestamp = Timestamp.from(newInstant);
         Item newItem = new Item();
         newItem.setNextAt(newTimestamp);
@@ -135,6 +139,23 @@ public class ItemController {
         newItem.setTopic(topic.get());
         newItem.setItemOrder(latestItemByOrder.get().getItemOrder() + 1);
         itemService.save(newItem);
+        model.addAttribute("isAuthenticated", true);
+        return "redirect:/items/" + id;
+    }
+
+    @PostMapping("/items/rearrange/{id}")
+    public String rearrangeItems(@PathVariable Long id, Model model, @RequestParam String startDate) {
+        Optional<Topic> topic = topicService.findById(id);
+        if (topic.isEmpty()) {
+            logger.error("Topic could not be found. This should NOT happen.");
+            return "redirect:/home";
+        }
+        Optional<Item> firstItemByNextAt = itemService.findLatestItemByNextAt(id);
+        if (firstItemByNextAt.isEmpty()) {
+            logger.error("Item could not be found. This should NOT happen.");
+            return "redirect:/home";
+        }
+        itemService.rearrangeItems(topic.get(), startDate);
         model.addAttribute("isAuthenticated", true);
         return "redirect:/items/" + id;
     }
