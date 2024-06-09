@@ -11,10 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.sql.Timestamp;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.text.ParseException;
@@ -165,7 +163,51 @@ public class ItemService {
         return itemRepository.findLatestItemByNextAtByTopicId(topicId);
     }
 
+    public Optional<Item> findFirstItemByNextAt(Long topicId) {
+        return itemRepository.findFirstItemByNextAtByTopicId(topicId);
+    }
+
     public Optional<Item> findLatestItemByOrder(Long topicId) {
         return itemRepository.getTopOrderByItemOrderDesc(topicId);
+    }
+
+    public void rearrangeItems(Topic topic, String givenStartDate) {
+        List<Item> items = itemRepository.findByTopicOrderByItemOrder(topic);
+        String timezone = topic.getUser().getTimeZone();
+        ZoneId zoneId = ZoneId.of(timezone);
+        LocalDateTime startDate = getDateForGivenDate(topic, givenStartDate);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        for (int i = 0; i < items.size(); i++) {
+            Item item = items.get(i);
+            LocalDateTime dateForItem = startDate.plusDays(topic.getEveryNthDay() * i);
+            ZonedDateTime zonedDateTime = dateForItem.atZone(zoneId);
+            ZonedDateTime zonedDateTimeInGMT = zonedDateTime.withZoneSameInstant(ZoneId.of("GMT"));
+            String formattedDate = zonedDateTimeInGMT.format(formatter);
+            item.setNextAt(Timestamp.valueOf(formattedDate));
+            logger.info("Date is rearranged for {}: {}", item.getId(), formattedDate);
+        }
+        itemRepository.saveAll(items);
+    }
+
+    private static LocalDateTime getDateForGivenDate(Topic topic, String startDate) {
+        startDate += " 00:00"; // append time to be able to parse TODO: find a way to remove this
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm");
+        LocalDateTime processedStartDate = LocalDateTime.parse(startDate, formatter);
+
+        String everydayAt = topic.getEverydayAt();
+        if (everydayAt.isEmpty()) {
+            everydayAt = "8:00";
+        }
+        String[] hourAndMinutes = everydayAt.split(":");
+        return processedStartDate
+                .withHour(
+                        Integer.parseInt(hourAndMinutes[0])
+                )
+                .withMinute(
+                        Integer.parseInt(hourAndMinutes[1])
+                )
+                .withSecond(0)
+                .withNano(0);
     }
 }

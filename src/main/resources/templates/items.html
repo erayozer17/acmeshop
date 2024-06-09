@@ -13,15 +13,25 @@
     <h2>Every Nth Day: </h2>
     <h3 th:text="${topic.everyNthDay}"></h3>
 
-    <!-- Button to open the form -->
-    <button class="btn btn-success mb-3" onclick="toggleForm()">Create New Item</button>
+    <button class="btn btn-success mb-3" onclick="toggleCreateItemForm()">Create New Item</button>
 
-    <!-- Form to create a new item -->
     <div id="createItemForm" style="display: none;">
         <form th:action="@{/items/create/{topicId}(topicId=${topicId})}" method="post">
             <div class="form-group">
                 <label for="text">Item Text</label>
                 <input type="text" class="form-control" id="text" name="text" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+    <button class="btn btn-success mb-3" onclick="toggleRearrangeItemsForm()">Rearrange Dates</button>
+
+    <div id="rearrangeItemsForm" style="display: none;">
+        <form th:action="@{/items/rearrange/{topicId}(topicId=${topicId})}" method="post">
+            <div class="form-group">
+                <label for="startDate">Start Date</label>
+                <input type="text" id="startDate" name="startDate" class="form-control" required />
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
@@ -57,8 +67,16 @@
     </table>
 </div>
 <script>
-    function toggleForm() {
+    function toggleCreateItemForm() {
         var form = document.getElementById("createItemForm");
+        if (form.style.display === "none") {
+            form.style.display = "block";
+        } else {
+            form.style.display = "none";
+        }
+    }
+    function toggleRearrangeItemsForm() {
+        var form = document.getElementById("rearrangeItemsForm");
         if (form.style.display === "none") {
             form.style.display = "block";
         } else {
@@ -73,6 +91,15 @@
             update: function () {
                 // Send an AJAX request to update the order of the items in the database
             }
+        });
+    });
+
+    $(function () {
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        $('#startDate').flatpickr({
+            dateFormat: "d M Y",
+            minDate: tomorrow
         });
     });
 

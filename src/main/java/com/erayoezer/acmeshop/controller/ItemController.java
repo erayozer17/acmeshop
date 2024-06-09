@@ -143,6 +143,23 @@ public class ItemController {
         return "redirect:/items/" + id;
     }
 
+    @PostMapping("/items/rearrange/{id}")
+    public String rearrangeItems(@PathVariable Long id, Model model, @RequestParam String startDate) {
+        Optional<Topic> topic = topicService.findById(id);
+        if (topic.isEmpty()) {
+            logger.error("Topic could not be found. This should NOT happen.");
+            return "redirect:/home";
+        }
+        Optional<Item> firstItemByNextAt = itemService.findLatestItemByNextAt(id);
+        if (firstItemByNextAt.isEmpty()) {
+            logger.error("Item could not be found. This should NOT happen.");
+            return "redirect:/home";
+        }
+        itemService.rearrangeItems(topic.get(), startDate);
+        model.addAttribute("isAuthenticated", true);
+        return "redirect:/items/" + id;
+    }
+
     @PostMapping("/items/reorder")
     public String reorderItems(@RequestBody List<ItemOrder> itemOrders) {
         Long topicId = 0L;

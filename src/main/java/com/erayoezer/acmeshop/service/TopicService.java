@@ -131,6 +131,7 @@ public class TopicService {
     private List<Item> splitStringIntoItems(String input, Topic topic) {
         return Stream.of(input.split("\n"))
                 .map(String::trim)
+                .filter(line -> !line.isEmpty())
                 .map(line -> line.replaceFirst("^[^a-zA-Z]*", ""))
                 .map(line -> {
                     Item item = new Item();
