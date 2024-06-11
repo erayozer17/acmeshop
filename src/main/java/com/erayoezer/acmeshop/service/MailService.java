@@ -51,9 +51,11 @@ public class MailService {
 
             EmailPayload payload = new EmailPayload(from, to, subject);
 
-            if (!content.trim().startsWith("<")) {
-                content = convertMarkdownToHtml(content);
+            if (!content.trim().startsWith("<") && !content.contains("<html>")) {
+                content = convertMarkdownToHtml(content);  // for non-html results
             }
+
+            content = trimUntilHTMLTag(content); // for results like html<html> from AI response
 
             payload.setHtml(content);
 
@@ -106,5 +108,15 @@ public class MailService {
         Node document = parser.parse(markdownContent);
         HtmlRenderer renderer = HtmlRenderer.builder().build();
         return renderer.render(document);
+    }
+
+    public static String trimUntilHTMLTag(String str) {
+        if (str.contains("<html>")) {
+            int index = str.indexOf('<');
+            if (index != -1) {
+                return str.substring(0, index);
+            }
+        }
+        return str;
     }
 }
