@@ -1,4 +1,4 @@
-package com.erayoezer.acmeshop.service;
+package com.erayoezer.acmeshop.service.ai;
 
 import com.erayoezer.acmeshop.model.AiModel;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -19,23 +19,24 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 @Service
-public class OpenAIService {
+public class OpenAIServiceImpl implements AiService{
 
-    private static final Logger logger = LoggerFactory.getLogger(OpenAIService.class);
+    private static final Logger logger = LoggerFactory.getLogger(OpenAIServiceImpl.class);
 
     private final CloseableHttpClient httpClient;
     private final String apiKey;
     private final String apiUrl;
 
     @Autowired
-    public OpenAIService(@Value("${openai.api.key}") String apiKey,
-                         @Value("${openai.api.url}") String apiUrl,
-                         CloseableHttpClient httpClient) {
+    public OpenAIServiceImpl(@Value("${openai.api.key}") String apiKey,
+                             @Value("${openai.api.url}") String apiUrl,
+                             CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
         this.apiKey = apiKey;
         this.apiUrl = apiUrl;
     }
 
+    @Override
     public String sendRequest(String prompt, AiModel aiModel) {
         String responseBody = "";
         try {

@@ -3,6 +3,7 @@ package com.erayoezer.acmeshop.service;
 import com.erayoezer.acmeshop.model.Item;
 import com.erayoezer.acmeshop.model.Topic;
 import com.erayoezer.acmeshop.repository.ItemRepository;
+import com.erayoezer.acmeshop.service.ai.AiService;
 import com.erayoezer.acmeshop.service.email.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ public class ItemService {
     private MailService mailService;
 
     @Autowired
-    private OpenAIService openAIService;
+    private AiService aIService;
 
     public List<Item> findAll() {
         return itemRepository.findAll();
@@ -159,7 +160,7 @@ public class ItemService {
                     """
                     , itemText, topicDescription, item.getTopic().getLanguage());
 //            String prompt = String.format("explain me %s comprehensively in context of %s. ", itemText, topic);
-            String response = openAIService.sendRequest(prompt, item.getTopic().getUser().getAiModel());
+            String response = aIService.sendRequest(prompt, item.getTopic().getUser().getAiModel());
             item.setContent(response);
             mailService.sendEmail(item.getTopic().getUser().getEmail(), itemText, response);
             item.setSent(true);

@@ -4,6 +4,7 @@ import com.erayoezer.acmeshop.model.Item;
 import com.erayoezer.acmeshop.model.Topic;
 import com.erayoezer.acmeshop.repository.ItemRepository;
 import com.erayoezer.acmeshop.repository.TopicRepository;
+import com.erayoezer.acmeshop.service.ai.AiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ public class TopicService {
     private TopicRepository topicRepository;
 
     @Autowired
-    private OpenAIService openAIService;
+    private AiService aIService;
 
     @Autowired
     private ItemRepository itemRepository;
@@ -118,7 +119,7 @@ public class TopicService {
 //            String prompt = String.format("list me all topics comprehensively related to %s. " +
 //                    "return only the items, each starting nothing but with a new line", description);
             logger.info(String.format("Prompt is sent: %s", prompt));
-            String response = openAIService.sendRequest(prompt, topic.getUser().getAiModel());
+            String response = aIService.sendRequest(prompt, topic.getUser().getAiModel());
             logger.info(String.format("Response is received: %s", response));
             List<Item> items = splitStringIntoItems(response, topic);
             List<Item> itemsWithDatesAndOrders = setDatesAndOrderToItems(items, topic);
