@@ -26,7 +26,6 @@ import java.util.Optional;
 public class ItemService {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
-    private static final SimpleDateFormat OUTPUT_FORMAT_TO_SAVE = new SimpleDateFormat("dd MMMM yyyy HH:mm");
     private static final SimpleDateFormat OUTPUT_FORMAT = new SimpleDateFormat("dd MMMM yyyy");
 
     @Autowired
@@ -79,20 +78,14 @@ public class ItemService {
         return OUTPUT_FORMAT.format(nextAt);
     }
 
-    public Date setDateFromString(String nextAt, String everydayAt, String timeZone) throws ParseException {
-        try {
-            ZoneId berlinZone = ZoneId.of(timeZone);
-            ZoneId gmtZone = ZoneId.of("GMT");
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-            LocalTime localTime = LocalTime.parse(everydayAt, formatter);
-            ZonedDateTime berlinTime = ZonedDateTime.of(LocalDate.now(), localTime, berlinZone);
-            ZonedDateTime gmtTime = berlinTime.withZoneSameInstant(gmtZone);
-            String fullDateAndTimeToSave = nextAt + " " + gmtTime.format(formatter);
-            return OUTPUT_FORMAT_TO_SAVE.parse(fullDateAndTimeToSave);
-        } catch (ParseException e) {
-            logger.error("Date could not be parsed. Date: {} Error: {}", nextAt, e.getMessage());
-            throw e;
-        }
+    public Timestamp setDateFromString(String nextAt, String everydayAt, String timeZone) throws ParseException {
+        ZoneId zoneId = ZoneId.of(timeZone);
+        LocalDateTime startDate = getDateForGivenDate(everydayAt, nextAt);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        ZonedDateTime zonedDateTime = startDate.atZone(zoneId);
+        ZonedDateTime zonedDateTimeInGMT = zonedDateTime.withZoneSameInstant(ZoneId.of("GMT"));
+        String formattedDate = zonedDateTimeInGMT.format(formatter);
+        return Timestamp.valueOf(formattedDate);
     }
 
     public Optional<Long> deleteById(Long id) {
@@ -199,12 +192,15 @@ public class ItemService {
     }
 
     private static LocalDateTime getDateForGivenDate(Topic topic, String startDate) {
+        return getDateForGivenDate(topic.getEverydayAt(), startDate);
+    }
+
+    private static LocalDateTime getDateForGivenDate(String everydayAt, String startDate) {
         startDate += " 00:00"; // append time to be able to parse TODO: find a way to remove this
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm");
         LocalDateTime processedStartDate = LocalDateTime.parse(startDate, formatter);
 
-        String everydayAt = topic.getEverydayAt();
         if (everydayAt.isEmpty()) {
             everydayAt = "8:00";
         }
