@@ -2,6 +2,7 @@ package com.erayoezer.acmeshop.service;
 
 import com.erayoezer.acmeshop.model.User;
 import com.erayoezer.acmeshop.repository.UserRepository;
+import com.erayoezer.acmeshop.service.email.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

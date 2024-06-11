@@ -11,6 +11,7 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       EMAIL_FROM_USER: ${{ secrets.EMAIL_USERNAME }}
       EMAIL_TOKEN: ${{ secrets.EMAIL_PASSWORD }}
+      EMAIL_API_URL: http://url
       MYSQL_USER: root
       MYSQL_PASSWORD: example
 
