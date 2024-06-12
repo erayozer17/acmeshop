@@ -1,6 +1,6 @@
 package com.erayoezer.acmeshop.scheduler;
 
-import com.erayoezer.acmeshop.service.ItemService;
+import com.erayoezer.acmeshop.service.item.ItemService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

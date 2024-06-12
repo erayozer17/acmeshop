@@ -1,4 +1,4 @@
-package com.erayoezer.acmeshop.service;
+package com.erayoezer.acmeshop.service.item;
 
 import com.erayoezer.acmeshop.model.Item;
 import com.erayoezer.acmeshop.model.Topic;
@@ -15,11 +15,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.sql.Timestamp;
-import java.util.Date;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,6 +39,9 @@ public class ItemServiceTest {
 
     @Mock
     private AiService aIService;
+
+    @Mock
+    private ItemDateService itemDateService;
 
     @InjectMocks
     private ItemService itemService;
@@ -132,43 +136,6 @@ public class ItemServiceTest {
     }
 
     @Test
-    public void testGetDateRepresentation() throws ParseException {
-        SimpleDateFormat OUTPUT_FORMAT = new SimpleDateFormat("dd MMMM yyyy");
-        String dateString = "25 December 2022";
-        Date date = new SimpleDateFormat("dd MMMM yyyy").parse(dateString);
-
-        String result = itemService.getDateRepresentation(date);
-
-        assertThat(result).isEqualTo(dateString);
-    }
-
-    @Test
-    public void testSetWinterDateFromString() throws ParseException {
-        String nextAt = "25 Dec 2024";
-        String everydayAt = "08:00";
-        String timeZone = "Europe/Berlin";
-        String expectedResult = "2024-12-25 07:00:00.0";
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-        Timestamp result = itemService.setDateFromString(nextAt, everydayAt, timeZone);
-        String actualResult = dateFormat.format(new Date(result.getTime()));
-
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
-    public void testSetSummerDateFromString() throws ParseException {
-        String nextAt = "25 Jun 2024";
-        String everydayAt = "08:00";
-        String timeZone = "Europe/Berlin";
-        String expectedResult = "2024-06-25 06:00:00.0";
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-        Timestamp result = itemService.setDateFromString(nextAt, everydayAt, timeZone);
-        String actualResult = dateFormat.format(new Date(result.getTime()));
-
-        assertEquals(expectedResult, actualResult);
-    }
-
-    @Test
     public void testDeleteById() {
         Long id = 1L;
         Item item = new Item();
@@ -237,7 +204,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    public void testRearrangeItems() {
+    public void testRearrangeItems() throws ParseException {
         Topic topic = new Topic();
         topic.setEverydayAt("08:00");
         topic.setEveryNthDay(1);
@@ -254,12 +221,21 @@ public class ItemServiceTest {
         items.add(item2);
         when(itemRepository.findByTopicAndSentIsFalseOrderByItemOrder(topic)).thenReturn(items);
 
+        LocalDateTime expectedDate = LocalDateTime.of(2022, 12, 25, 8, 0);
+        LocalDateTime expectedDate2 = LocalDateTime.of(2022, 12, 26, 8, 0);
+        when(itemDateService.getDateForGivenDate(topic, givenStartDate)).thenReturn(expectedDate);
+
+        String timezone = topic.getUser().getTimeZone();
+        Timestamp expectedTimestamp = Timestamp.valueOf(LocalDateTime.of(2022, 12, 25, 7, 0));
+        Timestamp expectedTimestamp2 = Timestamp.valueOf(LocalDateTime.of(2022, 12, 26, 7, 0));
+        when(itemDateService.setDateFromString(expectedDate, timezone)).thenReturn(expectedTimestamp);
+        when(itemDateService.setDateFromString(expectedDate2, timezone)).thenReturn(expectedTimestamp2);
         itemService.rearrangeItems(topic, givenStartDate);
 
         verify(itemRepository, times(1)).findByTopicAndSentIsFalseOrderByItemOrder(topic);
         verify(itemRepository, times(1)).saveAll(items);
-        assertThat(items.get(0).getNextAt()).isEqualTo(java.sql.Timestamp.valueOf(LocalDateTime.of(2022, 12, 25, 7, 0)));
-        assertThat(items.get(1).getNextAt()).isEqualTo(java.sql.Timestamp.valueOf(LocalDateTime.of(2022, 12, 26, 7, 0)));
+        assertThat(items.get(0).getNextAt()).isEqualTo(expectedTimestamp);
+        assertThat(items.get(1).getNextAt()).isEqualTo(expectedTimestamp2);
 
         List<Item> newOrderItems = new ArrayList<>();
         newOrderItems.add(items.get(1));
@@ -269,7 +245,7 @@ public class ItemServiceTest {
 
         itemService.rearrangeItems(topic, givenStartDate);
 
-        assertThat(items.get(0).getNextAt()).isEqualTo(java.sql.Timestamp.valueOf(LocalDateTime.of(2022, 12, 26, 7, 0)));
-        assertThat(items.get(1).getNextAt()).isEqualTo(java.sql.Timestamp.valueOf(LocalDateTime.of(2022, 12, 25, 7, 0)));
+        assertThat(items.get(0).getNextAt()).isEqualTo(expectedTimestamp2);
+        assertThat(items.get(1).getNextAt()).isEqualTo(expectedTimestamp);
     }
 }

@@ -1,4 +1,4 @@
-package com.erayoezer.acmeshop.service;
+package com.erayoezer.acmeshop.service.item;
 
 import com.erayoezer.acmeshop.model.Item;
 import com.erayoezer.acmeshop.model.Topic;
@@ -26,7 +26,6 @@ import java.util.Optional;
 public class ItemService {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemService.class);
-    private static final SimpleDateFormat OUTPUT_FORMAT = new SimpleDateFormat("dd MMMM yyyy");
 
     @Autowired
     private ItemRepository itemRepository;
@@ -36,6 +35,9 @@ public class ItemService {
 
     @Autowired
     private AiService aIService;
+
+    @Autowired
+    private ItemDateService itemDateService;
 
     public List<Item> findAll() {
         return itemRepository.findAll();
@@ -72,20 +74,6 @@ public class ItemService {
 
     public boolean existsById(Long id) {
         return findById(id).isPresent();
-    }
-
-    public String getDateRepresentation(Date nextAt) {
-        return OUTPUT_FORMAT.format(nextAt);
-    }
-
-    public Timestamp setDateFromString(String nextAt, String everydayAt, String timeZone) throws ParseException {
-        ZoneId zoneId = ZoneId.of(timeZone);
-        LocalDateTime startDate = getDateForGivenDate(everydayAt, nextAt);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-        ZonedDateTime zonedDateTime = startDate.atZone(zoneId);
-        ZonedDateTime zonedDateTimeInGMT = zonedDateTime.withZoneSameInstant(ZoneId.of("GMT"));
-        String formattedDate = zonedDateTimeInGMT.format(formatter);
-        return Timestamp.valueOf(formattedDate);
     }
 
     public Optional<Long> deleteById(Long id) {
@@ -176,43 +164,11 @@ public class ItemService {
     public void rearrangeItems(Topic topic, String givenStartDate) {
         List<Item> items = itemRepository.findByTopicAndSentIsFalseOrderByItemOrder(topic);
         String timezone = topic.getUser().getTimeZone();
-        ZoneId zoneId = ZoneId.of(timezone);
-        LocalDateTime startDate = getDateForGivenDate(topic, givenStartDate);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         for (int i = 0; i < items.size(); i++) {
             Item item = items.get(i);
-            LocalDateTime dateForItem = startDate.plusDays(topic.getEveryNthDay() * i);
-            ZonedDateTime zonedDateTime = dateForItem.atZone(zoneId);
-            ZonedDateTime zonedDateTimeInGMT = zonedDateTime.withZoneSameInstant(ZoneId.of("GMT"));
-            String formattedDate = zonedDateTimeInGMT.format(formatter);
-            item.setNextAt(Timestamp.valueOf(formattedDate));
-            logger.info("Date is rearranged for {}: {}", item.getId(), formattedDate);
+            LocalDateTime dateForItem = itemDateService.getDateForGivenDate(topic, givenStartDate).plusDays(topic.getEveryNthDay() * i);
+            item.setNextAt(itemDateService.setDateFromString(dateForItem, timezone));
         }
         itemRepository.saveAll(items);
-    }
-
-    private static LocalDateTime getDateForGivenDate(Topic topic, String startDate) {
-        return getDateForGivenDate(topic.getEverydayAt(), startDate);
-    }
-
-    private static LocalDateTime getDateForGivenDate(String everydayAt, String startDate) {
-        startDate += " 00:00"; // append time to be able to parse TODO: find a way to remove this
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm");
-        LocalDateTime processedStartDate = LocalDateTime.parse(startDate, formatter);
-
-        if (everydayAt.isEmpty()) {
-            everydayAt = "8:00";
-        }
-        String[] hourAndMinutes = everydayAt.split(":");
-        return processedStartDate
-                .withHour(
-                        Integer.parseInt(hourAndMinutes[0])
-                )
-                .withMinute(
-                        Integer.parseInt(hourAndMinutes[1])
-                )
-                .withSecond(0)
-                .withNano(0);
     }
 }

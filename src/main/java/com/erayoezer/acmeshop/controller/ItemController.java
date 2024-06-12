@@ -3,7 +3,8 @@ package com.erayoezer.acmeshop.controller;
 import com.erayoezer.acmeshop.model.Item;
 import com.erayoezer.acmeshop.model.ItemOrder;
 import com.erayoezer.acmeshop.model.Topic;
-import com.erayoezer.acmeshop.service.ItemService;
+import com.erayoezer.acmeshop.service.item.ItemDateService;
+import com.erayoezer.acmeshop.service.item.ItemService;
 import com.erayoezer.acmeshop.service.TopicService;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -28,13 +29,16 @@ public class ItemController {
 
     private final TopicService topicService;
     private final ItemService itemService;
+    private final ItemDateService itemDateService;
 
     public ItemController(
             TopicService topicService,
-            ItemService itemService
+            ItemService itemService,
+            ItemDateService itemDateService
     ) {
         this.topicService = topicService;
         this.itemService = itemService;
+        this.itemDateService = itemDateService;
     }
 
     @GetMapping("/items/{id}")
@@ -44,7 +48,7 @@ public class ItemController {
             Topic retTopic = topic.get();
             model.addAttribute("topic", retTopic);
             List<Item> itemsByTopic = itemService.findByTopicWhereNotSent(retTopic);
-            itemsByTopic.forEach(item -> item.setDateRepresentation(itemService.getDateRepresentation(item.getNextAt())));
+            itemsByTopic.forEach(item -> item.setDateRepresentation(itemDateService.getDateRepresentation(item.getNextAt())));
             itemsByTopic.sort(Comparator.comparing(Item::getItemOrder));
             model.addAttribute("items", itemsByTopic);
             model.addAttribute("isAuthenticated", true);
@@ -61,7 +65,7 @@ public class ItemController {
         Optional<Item> item = itemService.findById(id);
         if (item.isPresent()) {
             Item retItem = item.get();
-            retItem.setDateRepresentation(itemService.getDateRepresentation(retItem.getNextAt()));
+            retItem.setDateRepresentation(itemDateService.getDateRepresentation(retItem.getNextAt()));
             model.addAttribute("item", retItem);
             model.addAttribute("isAuthenticated", true);
             return "itemEdit";
@@ -82,7 +86,7 @@ public class ItemController {
         item.setText(text);
         try {
             item.setNextAt(
-                    itemService.setDateFromString(
+                    itemDateService.setDateFromString(
                             dateRepresentation,
                             item.getTopic().getEverydayAt(),
                             item.getTopic().getUser().getTimeZone()));
