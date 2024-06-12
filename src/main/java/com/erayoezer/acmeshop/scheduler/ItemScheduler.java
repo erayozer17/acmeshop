@@ -1,6 +1,6 @@
 package com.erayoezer.acmeshop.scheduler;
 
-import com.erayoezer.acmeshop.service.item.ItemService;
+import com.erayoezer.acmeshop.service.item.ItemProcessingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ public class ItemScheduler {
     private static final Logger logger = LoggerFactory.getLogger(ItemScheduler.class);
 
     @Autowired
-    ItemService itemService;
+    private ItemProcessingService itemProcessingService;
 
     private final Lock itemProcessingLock = new ReentrantLock();
 
@@ -28,7 +28,7 @@ public class ItemScheduler {
             try {
                 logger.info("Item processing scheduler is running...");
                 Date now = new Date(System.currentTimeMillis());
-                itemService.processNecessaryItems(now);
+                itemProcessingService.processNecessaryItems(now);
             } finally {
                 logger.info("Item processing scheduler is completed.");
                 itemProcessingLock.unlock();

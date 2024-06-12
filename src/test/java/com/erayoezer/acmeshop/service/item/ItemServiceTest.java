@@ -11,21 +11,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,12 +27,6 @@ public class ItemServiceTest {
 
     @Mock
     private ItemRepository itemRepository;
-
-    @Mock
-    private MailService mailService;
-
-    @Mock
-    private AiService aIService;
 
     @Mock
     private ItemDateService itemDateService;
@@ -146,22 +134,6 @@ public class ItemServiceTest {
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo(id);
         verify(itemRepository, times(1)).deleteById(id);
-    }
-
-    @Test
-    public void testProcessNecessaryItems() {
-        java.sql.Date now = new java.sql.Date(System.currentTimeMillis());
-        int returnedTopicsSize = 10;
-        Pageable pageable = PageRequest.of(0, returnedTopicsSize);
-        List<Item> itemsToBeProcessed = new ArrayList<>();
-        when(itemRepository.findItemsToBeProcessed(now, pageable)).thenReturn(itemsToBeProcessed);
-
-        itemService.processNecessaryItems(now);
-
-        verify(itemRepository, times(1)).findItemsToBeProcessed(now, pageable);
-        verify(aIService, times(itemsToBeProcessed.size())).sendRequest(anyString(), any());
-        verify(mailService, times(itemsToBeProcessed.size())).sendEmail(anyString(), anyString(), anyString());
-        verify(itemRepository, times(itemsToBeProcessed.size())).save(any(Item.class));
     }
 
     @Test
