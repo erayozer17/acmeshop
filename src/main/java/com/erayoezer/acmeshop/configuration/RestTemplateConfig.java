@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
+// TODO: check this configurations
 @Configuration
 public class RestTemplateConfig {
 

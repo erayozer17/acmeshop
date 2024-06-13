@@ -3,33 +3,36 @@ package com.erayoezer.acmeshop.repository;
 import com.erayoezer.acmeshop.model.Item;
 import com.erayoezer.acmeshop.model.Topic;
 import com.erayoezer.acmeshop.model.User;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY, connection = EmbeddedDatabaseConnection.H2)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Transactional
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Sql("/data.sql")
-public class TopicRepositoryTest {// extends BaseRepositoryTest {
-
-    @Autowired
-    private TopicRepository topicRepository;
+public class ItemRepositoryTest {// extends BaseRepositoryTest {
 
     @Autowired
     private ItemRepository itemRepository;
+
+    @Autowired
+    private TopicRepository topicRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -86,60 +89,54 @@ public class TopicRepositoryTest {// extends BaseRepositoryTest {
     }
 
     @Test
-    public void testFindTopicById() {
-        Optional<Topic> optionalTopic = topicRepository.findById(topic.getId());
-
-        assertThat(optionalTopic).isPresent();
-        Topic topic = optionalTopic.get();
-        assertThat(topic.getName()).isEqualTo("Test Topic");
-    }
-
-//    @Test
-//    public void testFindItemsByTopic() {
-//        Optional<Topic> optionalTopic = topicRepository.findById(topic.getId());
-//
-//        assertThat(optionalTopic).isPresent();
-//        Topic topic = optionalTopic.get();
-//
-//        assertThat(topic.getItems()).isNotEmpty(); // TODO: fix this, lazy loading issue
-//        assertThat(topic.getItems().getFirst().getText()).isEqualTo("Test Item");
-//    }
-
-    @Test
-    public void testCreateAdditionalItem() {
-        Optional<Topic> optionalTopic = topicRepository.findById(topic.getId());
-
-        assertThat(optionalTopic).isPresent();
-        Topic topic = optionalTopic.get();
-
-        Item newItem = new Item();
-        newItem.setText("Another Test Item");
-        newItem.setTopic(topic);
-
-        Item savedItem = itemRepository.save(newItem);
-
-        assertThat(savedItem).isNotNull();
-        assertThat(savedItem.getId()).isGreaterThan(0);
-        assertThat(savedItem.getTopic().getId()).isEqualTo(topic.getId());
+    public void testFindItemsToBeProcessed() {
+        java.sql.Date now = new java.sql.Date(System.currentTimeMillis());
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Item> items = itemRepository.findItemsToBeProcessed(now, pageable);
+        assertEquals(1, items.size());
+        assertEquals(item1, items.getFirst());
     }
 
     @Test
-    public void testItemsSavedWhenTopicSaved() {
-        Topic topic = new Topic();
-        topic.setName("Test Topic with items");
-        topic.setDescription("Test Description with items");
+    public void testFindByTopic() {
+        List<Item> items = itemRepository.findByTopic(topic);
+        assertEquals(2, items.size());
+        assertTrue(items.contains(item1));
+        assertTrue(items.contains(item2));
+    }
 
-        List<Item> items = new ArrayList<>();
-        Item item = new Item();
-        item.setText("item 1");
-        items.add(item);
+    @Test
+    public void testFindByTopicAndSentIsFalseOrderByItemOrder() {
+        List<Item> items = itemRepository.findByTopicAndSentIsFalseOrderByItemOrder(topic);
+        assertEquals(1, items.size());
+        assertEquals(item1, items.getFirst());
+    }
 
-        topic.setItems(items);
+    @Test
+    public void testFindByTopicAndSentIsFalse() {
+        List<Item> items = itemRepository.findByTopicAndSentIsFalse(topic);
+        assertEquals(1, items.size());
+        assertEquals(item1, items.getFirst());
+    }
 
-        Topic savedTopic = topicRepository.save(topic);
-        Optional<Topic> returnedTopic = topicRepository.findById(savedTopic.getId());
+    @Test
+    public void testFindLatestItemByNextAtByTopicId() {
+        Optional<Item> item = itemRepository.findLatestItemByNextAtByTopicId(topic.getId());
+        assertTrue(item.isPresent());
+        assertEquals(item2.getNextAt(), item.get().getNextAt());
+    }
 
-        assertThat(returnedTopic).isPresent();
-        assertThat(returnedTopic.get().getItems()).isNotEmpty();
+    @Test
+    public void testFindFirstItemByNextAtByTopicId() {
+        Optional<Item> item = itemRepository.findFirstItemByNextAtByTopicId(topic.getId());
+        assertTrue(item.isPresent());
+        assertEquals(item1.getNextAt(), item.get().getNextAt());
+    }
+
+    @Test
+    public void testGetTopOrderByItemOrderDesc() {
+        Optional<Item> item = itemRepository.getTopOrderByItemOrderDesc(topic.getId());
+        assertTrue(item.isPresent());
+        assertEquals(item2.getItemOrder(), item.get().getItemOrder());
     }
 }
